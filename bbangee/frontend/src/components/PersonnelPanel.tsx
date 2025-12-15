@@ -3,6 +3,7 @@ import { fetchPeople, searchPerson } from "../api/people";
 import type { Person } from "../api/people";
 import { fetchLogsBySerial, recordIn, recordOut } from "../api/access";
 import type { AccessLog } from "../api/access";
+import { speakClassify } from "../api/voice";
 
 export default function PersonnelPanel() {
   const [latestPerson, setLatestPerson] = useState<Person | null>(null);
@@ -25,6 +26,8 @@ export default function PersonnelPanel() {
 
         const logs = await fetchLogsBySerial(lastPerson.military_serial);
         setLatestLog(logs[0] ?? null);
+     
+
       }
     };
     init();
@@ -71,8 +74,10 @@ export default function PersonnelPanel() {
       setLatestLog(logs[0] ?? null);
 
       pushEvent(`✔ ${person.name} 검색됨`);
+      speakClassify(true);
     } catch {
       pushEvent("❌ 해당 군번의 사용자가 없습니다.");
+      speakClassify(false);
     }
   };
 

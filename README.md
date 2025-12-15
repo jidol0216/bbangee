@@ -127,11 +127,50 @@ npm run dev
 실행 주소:
 http://localhost:5173
 
-7. 🔐 환경 변수 설정
-환경 변수를 .env 파일에서 관리할 수 있습니다.
+7. 🔐 환경 변수 설정 (.env)
 
-예시:
+본 프로젝트는 프론트엔드와 백엔드가 분리된 구조이므로
+프론트엔드에서 접근할 백엔드 서버 주소를 환경 변수로 관리합니다.
 
+⚠️ .env 파일은 Git에 커밋되지 않으므로
+각 개발자는 로컬 환경에 맞게 직접 생성해야 합니다.
+
+📁 .env 파일 생성 위치
+bbangee/
+└── frontend/
+    └── .env
+
+🧾 .env 파일 내용
+VITE_API_BASE_URL=http://<BACKEND_IP>:8000
+
+예시
+VITE_API_BASE_URL=http://172.30.1.55:8000
+
+
+<BACKEND_IP> : 백엔드(FastAPI)가 실행 중인 PC의 로컬 IP
+
+포트 8000 : FastAPI 기본 포트
+
+🔍 로컬 IP 확인 방법 (Linux / macOS)
+ip addr
+
+
+출력 예시:
+
+inet 172.30.1.55/24
+
+
+→ 이 경우 .env는 다음과 같이 설정합니다:
+
+VITE_API_BASE_URL=http://172.30.1.55:8000
+
+⚠️ 주의 사항 (매우 중요)
+
+와이파이/네트워크가 변경되면 로컬 IP도 변경될 수 있습니다.
+
+이 경우 .env 파일의 IP를 반드시 수정 후 프론트엔드를 재시작해야 합니다.
+
+npm run dev
 
 API_BASE_URL=http://localhost:8000
 프론트엔드의 axios 클라이언트는 이 값을 읽습니다.

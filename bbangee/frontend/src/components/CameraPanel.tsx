@@ -1,7 +1,7 @@
 // src/components/CameraPanel.tsx
 import React from "react";
-
-const CAMERA_STREAM_URL = "http://localhost:8000/stream"; // 나중에 실제 엔드포인트로 변경
+import { API_BASE } from "../api/client";
+const CAMERA_STREAM_URL = `${API_BASE}/stream`; // 나중에 실제 엔드포인트로 변경
 
 export default function CameraPanel() {
   return (
