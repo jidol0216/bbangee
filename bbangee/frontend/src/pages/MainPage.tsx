@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import CameraPanel from "../components/CameraPanel";
 import ServoControl from "../components/ServoControl";
 import PersonnelPanel from "../components/PersonnelPanel";
+import RobotPanel from "../components/RobotPanel";
 
 type Props = {
   onLogout: () => void;
@@ -47,6 +48,11 @@ export default function MainPage({ onLogout }: Props) {
         <section className="left-panel">
           <CameraPanel />
           <ServoControl />
+        </section>
+
+        {/* 중앙: 로봇 제어 패널 */}
+        <section className="center-panel">
+          <RobotPanel />
         </section>
 
         {/* 우측: 인적사항 패널 */}
