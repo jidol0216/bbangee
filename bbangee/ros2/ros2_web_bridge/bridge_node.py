@@ -50,7 +50,7 @@ class BridgeNode(Node):
             'joint_tracking': {
                 'state': 'IDLE',  # IDLE, TRACKING, RETURN_HOME
                 'control_source': 'terminal',  # terminal 또는 web
-                'control_mode': 1,  # 1: 직접 제어, 2: 최적 제어
+                'control_mode': 1,  # 1: 직접 제어, 2: 최적 제어 (디폴트: 기본)
                 'control_allowed': False  # 웹 제어권일 때만 True
             },
             'system': {
@@ -125,6 +125,10 @@ class BridgeNode(Node):
 
     def _joint_callback(self, msg: JointState):
         """로봇 관절 상태 콜백"""
+        # 모든 값이 0인 메시지는 무시 (더미 퍼블리셔에서 오는 것)
+        if all(abs(p) < 0.0001 for p in msg.position):
+            return
+            
         with self.state_lock:
             self.state['robot']['connected'] = True
             # radian to degree 변환

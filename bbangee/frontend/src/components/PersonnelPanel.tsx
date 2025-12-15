@@ -172,8 +172,8 @@ export default function PersonnelPanel() {
 
             {/* 액션 버튼 */}
             <div className="person-actions">
-              <button className="btn-primary" disabled={isInside} onClick={handleCheckIn}>CHECK IN</button>
-              <button className="btn-danger" disabled={!isInside} onClick={handleCheckOut}>CHECK OUT</button>
+              <button className="btn-primary" disabled={isInside ?? false} onClick={handleCheckIn}>CHECK IN</button>
+              <button className="btn-danger" disabled={!(isInside ?? false)} onClick={handleCheckOut}>CHECK OUT</button>
             </div>
 
             {/* 이벤트 로그 */}

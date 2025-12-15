@@ -5,6 +5,8 @@ import CameraPanel from "../components/CameraPanel";
 import ServoControl from "../components/ServoControl";
 import PersonnelPanel from "../components/PersonnelPanel";
 import RobotPanel from "../components/RobotPanel";
+import VoicePanel from "../components/VoicePanel";
+import ScenarioPanel from "../components/ScenarioPanel";
 
 type Props = {
   onLogout: () => void;
@@ -50,13 +52,15 @@ export default function MainPage({ onLogout }: Props) {
           <ServoControl />
         </section>
 
-        {/* 중앙: 로봇 제어 패널 */}
+        {/* 중앙: 로봇 제어 + 음성 패널 */}
         <section className="center-panel">
           <RobotPanel />
+          <VoicePanel />
         </section>
 
-        {/* 우측: 인적사항 패널 */}
+        {/* 우측: 시나리오 패널 + 인적사항 패널 */}
         <section className="right-panel">
+          <ScenarioPanel />
           <PersonnelPanel />
         </section>
       </main>

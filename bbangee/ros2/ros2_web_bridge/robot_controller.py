@@ -95,6 +95,9 @@ class RobotController(Node):
             elif cmd_type == 'robot_command':
                 self._handle_robot_command(command.get('data', {}))
             
+            elif cmd_type == 'robot_motion':
+                self._handle_robot_motion(command.get('data', {}))
+            
             # 처리된 명령 파일 삭제
             os.remove(COMMAND_FILE)
             
@@ -129,8 +132,45 @@ class RobotController(Node):
             self._handle_tracking_enable(True)
         elif cmd == 'tracking_off':
             self._handle_tracking_enable(False)
+        elif cmd == 'speed_boost':
+            # 추적 속도 증가 명령
+            multiplier = data.get('speed_multiplier', 1.5)
+            self._send_web_command(f'speed:{multiplier}')
+            self.get_logger().info(f'⚡ 추적 속도 증가: {multiplier}배')
         else:
             self.get_logger().warn(f'Unknown command: {cmd}')
+
+    def _handle_robot_motion(self, data: dict):
+        """로봇 모션 실행 (미리 정의된 조인트 위치)"""
+        if not HAS_DSR:
+            self.get_logger().warn('DSR not available - cannot execute motion')
+            return
+        
+        motion_id = data.get('motion_id', 'custom')
+        motion_name = data.get('motion_name', 'Unknown')
+        joints = data.get('joints', [0.0] * 6)
+        velocity = data.get('velocity', 30.0)
+        acceleration = data.get('acceleration', 25.0)
+        
+        self.get_logger().info(f'🤖 모션 실행: {motion_name} ({motion_id})')
+        self.get_logger().info(f'   Joints: {joints}')
+        
+        if not self.move_joint_client.wait_for_service(timeout_sec=2.0):
+            self.get_logger().error('MoveJoint service not available')
+            return
+        
+        request = MoveJoint.Request()
+        request.pos = joints
+        request.vel = velocity
+        request.acc = acceleration
+        request.time = 0.0
+        request.radius = 0.0
+        request.mode = 0
+        request.blend_type = 0
+        request.sync_type = 0  # 비동기 실행 (UI 블로킹 방지)
+        
+        future = self.move_joint_client.call_async(request)
+        self.get_logger().info(f'✅ 모션 "{motion_name}" 명령 전송 완료')
 
     def _move_to_home(self):
         """홈 위치로 이동"""

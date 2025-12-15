@@ -44,7 +44,6 @@ export default function RobotPanel() {
   const [status, setStatus] = useState<ROS2Status | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isHomePosition, setIsHomePosition] = useState(true); // 현재 위치 상태 (home/ready 토글)
 
   // 상태 조회
   const fetchStatus = async () => {
@@ -69,50 +68,10 @@ export default function RobotPanel() {
     setLoading(true);
     try {
       await api.post("/ros2/robot/command", { command });
+      // 시나리오는 여기서 시작하지 않음 - 실제 디텍션 시에만 시작
       await fetchStatus();
     } catch (err) {
       setError("명령 전송 실패");
-    }
-    setLoading(false);
-  };
-
-  // 로봇 이동 완료 대기 (폴링)
-  const waitForMovementComplete = async (maxWaitSec: number = 10): Promise<boolean> => {
-    const startTime = Date.now();
-    const pollInterval = 500; // 0.5초마다 체크
-    
-    // 잠시 대기 후 폴링 시작 (명령이 처리되기 시작할 시간)
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    while ((Date.now() - startTime) / 1000 < maxWaitSec) {
-      try {
-        const res = await api.get("/ros2/robot");
-        // 로봇이 idle 상태가 되면 이동 완료
-        if (res.data?.status === "idle" || res.data?.status === "standby") {
-          return true;
-        }
-      } catch (err) {
-        // 에러 무시하고 계속 폴링
-      }
-      await new Promise(resolve => setTimeout(resolve, pollInterval));
-    }
-    return false; // 타임아웃
-  };
-
-  // 홈/시작 위치 토글
-  const togglePosition = async () => {
-    const newCommand = isHomePosition ? "ready" : "home";
-    setLoading(true);
-    try {
-      await api.post("/ros2/robot/command", { command: newCommand });
-      
-      // 로봇 이동 완료 대기
-      await waitForMovementComplete(10);
-      
-      setIsHomePosition(!isHomePosition);
-      await fetchStatus();
-    } catch (err) {
-      setError("위치 변경 실패");
     }
     setLoading(false);
   };
@@ -122,8 +81,8 @@ export default function RobotPanel() {
   const jointTracking = status?.state?.joint_tracking;
   const system = status?.state?.system;
   
-  // TRACKING 중이면 웹 제어 비활성화
-  const controlAllowed = jointTracking?.control_allowed !== false;
+  // 웹 제어권일 때만 제어 허용
+  const controlAllowed = jointTracking?.control_source === 'web';
 
   return (
     <div className="panel robot-panel">
@@ -233,18 +192,18 @@ export default function RobotPanel() {
           </h4>
           
           {/* 제어권 버튼 */}
-          <div className="control-buttons" style={{marginBottom: '8px'}}>
+          <div className="control-buttons" style={{marginBottom: '10px'}}>
             <button 
               className={`btn ${jointTracking?.control_source === 'web' ? "btn-success" : "btn-secondary"}`}
               onClick={() => sendCommand("take_control")}
               disabled={loading}
               title="웹에서 제어권 가져오기"
             >
-              🌐 웹 제어
+              {jointTracking?.control_source === 'web' ? "✅ 웹 제어중" : "🌐 웹 제어권 가져오기"}
             </button>
           </div>
 
-          {/* 기능 버튼 (웹 제어권일 때만 활성화) */}
+          {/* 트래킹 제어 버튼 */}
           <div className="control-buttons">
             <button 
               className={`btn ${jointTracking?.state === 'TRACKING' ? "btn-danger" : "btn-primary"}`}
@@ -252,12 +211,16 @@ export default function RobotPanel() {
               disabled={loading || !controlAllowed}
               title={jointTracking?.state === 'TRACKING' ? "추적 중지" : "추적 시작"}
             >
-              {jointTracking?.state === 'TRACKING' ? "⏹️ 중지" : "🎯 시작"}
+              {jointTracking?.state === 'TRACKING' ? "⏹️ 추적 중지" : "🎯 추적 시작"}
             </button>
+          </div>
+
+          {/* 위치 이동 버튼 */}
+          <div className="control-buttons" style={{marginTop: '10px'}}>
             <button 
               className="btn btn-secondary"
               onClick={() => sendCommand("home")}
-              disabled={loading || !controlAllowed}
+              disabled={loading || !controlAllowed || jointTracking?.state === 'TRACKING'}
               title="홈 위치로 이동"
             >
               🏠 홈
@@ -265,34 +228,37 @@ export default function RobotPanel() {
             <button 
               className="btn btn-secondary"
               onClick={() => sendCommand("ready")}
-              disabled={loading || !controlAllowed}
-              title="시작 위치로 이동"
+              disabled={loading || !controlAllowed || jointTracking?.state === 'TRACKING'}
+              title="준비 위치로 이동"
             >
               📍 준비
             </button>
           </div>
           
           {/* 제어 모드 */}
-          <div className="control-buttons" style={{marginTop: '8px'}}>
-            <button 
-              className={`btn btn-sm ${jointTracking?.control_mode === 1 ? "btn-primary" : "btn-outline"}`}
-              onClick={() => sendCommand("mode1")}
-              disabled={loading || !controlAllowed}
-              title="직접 제어 모드"
-            >
-              모드1
-            </button>
-            <button 
-              className={`btn btn-sm ${jointTracking?.control_mode === 2 ? "btn-primary" : "btn-outline"}`}
-              onClick={() => sendCommand("mode2")}
-              disabled={loading || !controlAllowed}
-              title="최적 제어 모드"
-            >
-              모드2
-            </button>
+          <div className="control-mode" style={{marginTop: '12px'}}>
+            <span className="mode-label">제어 모드:</span>
+            <div className="control-buttons">
+              <button 
+                className={`btn btn-sm ${jointTracking?.control_mode === 1 ? "btn-primary" : "btn-outline"}`}
+                onClick={() => sendCommand("mode1")}
+                disabled={loading || !controlAllowed}
+                title="기본 제어 - 직접 관절 제어"
+              >
+                {jointTracking?.control_mode === 1 ? "✓ " : ""}기본 제어
+              </button>
+              <button 
+                className={`btn btn-sm ${jointTracking?.control_mode === 2 ? "btn-primary" : "btn-outline"}`}
+                onClick={() => sendCommand("mode2")}
+                disabled={loading || !controlAllowed}
+                title="최적 제어 - 스무딩 적용"
+              >
+                {jointTracking?.control_mode === 2 ? "✓ " : ""}최적 제어
+              </button>
+            </div>
           </div>
           
-          {!controlAllowed && jointTracking?.control_source !== 'web' && (
+          {!controlAllowed && (
             <div className="control-hint">
               ⚠️ 웹 제어권을 가져와야 제어할 수 있습니다
             </div>
