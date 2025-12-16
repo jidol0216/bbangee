@@ -249,3 +249,70 @@ def camera_stream():
         _generate_mjpeg(),
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
+
+
+# ===== Collision Recovery =====
+
+COLLISION_STATE_FILE = '/tmp/collision_recovery_state.json'
+COLLISION_COMMAND_FILE = '/tmp/collision_recovery_command.json'
+
+
+class CollisionCommand(BaseModel):
+    command: str  # 'check_status', 'auto_recovery', 'move_home', 'move_down_slow', 'move_down_fast', 'monitor_start', 'monitor_stop'
+
+
+def _read_collision_state() -> dict:
+    """충돌 복구 상태 읽기"""
+    default = {
+        'robot_state': 'UNKNOWN',
+        'robot_state_code': -1,
+        'is_safe_stop': False,
+        'is_recovering': False,
+        'last_action': '',
+        'log': [],
+        'timestamp': 0
+    }
+    if not os.path.exists(COLLISION_STATE_FILE):
+        return default
+    try:
+        with open(COLLISION_STATE_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return default
+
+
+def _write_collision_command(cmd: dict):
+    """충돌 복구 명령 작성"""
+    cmd['timestamp'] = time.time()
+    with open(COLLISION_COMMAND_FILE, 'w') as f:
+        json.dump(cmd, f)
+
+
+@router.get("/collision/status")
+def get_collision_status():
+    """충돌 복구 상태 조회"""
+    state = _read_collision_state()
+    is_node_running = (time.time() - state.get('timestamp', 0)) < 3
+    return {
+        "node_running": is_node_running,
+        "state": state
+    }
+
+
+@router.post("/collision/command")
+def send_collision_command(cmd: CollisionCommand):
+    """충돌 복구 명령 전송"""
+    valid_commands = [
+        'check_status',      # 상태 확인
+        'auto_recovery',     # 자동 복구
+        'move_home',         # 홈 위치 이동
+        'move_down_slow',    # 충돌 테스트 (느림)
+        'move_down_fast',    # 충돌 테스트 (빠름)
+        'monitor_start',     # 모니터링 시작
+        'monitor_stop',      # 모니터링 중지
+    ]
+    if cmd.command not in valid_commands:
+        raise HTTPException(status_code=400, detail=f"Invalid command. Valid: {valid_commands}")
+    
+    _write_collision_command({'command': cmd.command})
+    return {"success": True, "message": f"Command '{cmd.command}' sent"}

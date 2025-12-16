@@ -26,6 +26,7 @@ body {
     "Noto Sans KR", sans-serif;
   background: radial-gradient(circle at top left, #101820, #050809 60%);
   color: var(--text-main);
+  font-size: 14px;
 }
 
 button {
@@ -129,7 +130,7 @@ button {
   border-radius: 999px;
   padding: 8px 16px;
   border: 1px solid transparent;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   transition: transform 0.1s ease, box-shadow 0.1s ease,
     background 0.1s ease, border-color 0.1s ease;
@@ -184,12 +185,12 @@ button {
 }
 
 .top-title {
-  font-size: 15px;
+  font-size: 17px;
   letter-spacing: 0.16em;
 }
 
 .top-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-sub);
   margin-top: 4px;
 }
@@ -199,12 +200,54 @@ button {
   gap: 10px;
 }
 
-.main-layout {
+.main-layout-compact {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 16px 12px;
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+.top-row {
   display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 16px;
-  padding: 16px 20px 20px;
+  grid-template-columns: 2fr 1.2fr 1.3fr;
+  gap: 8px;
+  flex: 0 0 55%;
+  min-height: 0;
+}
+
+.bottom-row {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.3fr;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.camera-section,
+.robot-section,
+.scenario-section,
+.servo-section,
+.voice-collision-section,
+.personnel-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.voice-collision-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.center-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* 패널 공통 */
@@ -216,46 +259,65 @@ button {
   box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .panel-header {
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-bottom: 1px solid rgba(140, 180, 160, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .panel-title {
-  font-size: 13px;
-  letter-spacing: 0.18em;
+  font-size: 14px;
+  letter-spacing: 0.12em;
 }
 
 .panel-tag {
-  font-size: 11px;
+  font-size: 12px;
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.panel-tag.online {
+  background: rgba(55, 255, 159, 0.2);
   color: var(--accent);
 }
 
+.panel-tag.offline {
+  background: rgba(255, 77, 77, 0.2);
+  color: var(--danger);
+}
+
 .panel-body {
-  padding: 12px 14px 14px;
+  padding: 10px 12px;
   flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 /* 카메라 패널 */
 
 .camera-panel {
   flex: 1;
-  margin-bottom: 12px;
+  min-height: 0;
 }
 
 .camera-body {
   position: relative;
-  height: 320px;
+  flex: 1;
+  min-height: 0;
 }
 
 .camera-placeholder {
   height: 100%;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: radial-gradient(circle at 20% 20%, #182624, #050809 70%);
   position: relative;
@@ -286,30 +348,37 @@ button {
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-sub);
 }
 
 .camera-text span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
 }
 
 .left-panel {
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .right-panel {
   display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* 서보 패널 */
 
+.servo-panel {
+  height: 100%;
+}
+
 .servo-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .servo-status {
@@ -340,7 +409,7 @@ button {
 
 .servo-note {
   margin: 6px 0 0;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-sub);
 }
 
@@ -378,22 +447,22 @@ button {
 }
 
 .person-name {
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .person-rank {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--accent);
   margin-left: 6px;
 }
 
 .person-meta {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-sub);
 }
 
 .person-log h3 {
-  font-size: 13px;
+  font-size: 14px;
   margin: 0 0 6px;
 }
 
@@ -401,11 +470,11 @@ button {
   list-style: none;
   padding: 0;
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .person-empty {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-sub);
 }
 .person-events {
@@ -683,7 +752,7 @@ button:disabled {
 
 .robot-panel h4 {
   margin: 0 0 10px 0;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -691,7 +760,7 @@ button:disabled {
 
 .robot-panel h5 {
   margin: 8px 0 6px 0;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--text-sub);
 }
 
@@ -709,7 +778,7 @@ button:disabled {
   padding: 4px 10px;
   background: rgba(0, 30, 20, 0.5);
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 }
 
 .status-indicator .indicator-dot {
@@ -738,7 +807,7 @@ button:disabled {
 .info-row {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .info-row .connected {
@@ -783,12 +852,12 @@ button:disabled {
 }
 
 .joint-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-sub);
 }
 
 .joint-value {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--accent);
   font-family: monospace;
@@ -796,7 +865,7 @@ button:disabled {
 
 /* Face Position */
 .face-position {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--text-sub);
   font-family: monospace;
   margin-top: 4px;
@@ -816,7 +885,7 @@ button:disabled {
 .control-buttons .btn {
   padding: 8px 16px;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   transition: all 0.2s;
 }
@@ -893,7 +962,7 @@ button:disabled {
 
 .btn-sm {
   padding: 4px 10px !important;
-  font-size: 0.7rem !important;
+  font-size: 0.8rem !important;
 }
 
 .btn-outline {
@@ -988,7 +1057,7 @@ button:disabled {
 .voice-select label,
 .voice-presets label,
 .voice-custom label {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--text-sub);
   font-weight: 500;
 }
@@ -999,7 +1068,7 @@ button:disabled {
   border: 1px solid var(--border);
   background: var(--bg-secondary);
   color: var(--text-main);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 /* 드롭다운 옵션 스타일 - 흰색 배경 문제 해결 */
@@ -1023,7 +1092,7 @@ button:disabled {
 }
 
 .voice-scenario label {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--accent);
   font-weight: 600;
 }
@@ -1830,4 +1899,159 @@ button:disabled {
   background: linear-gradient(135deg, #6db3ff 0%, #4a9eff 100%) !important;
   box-shadow: 0 0 18px rgba(74, 158, 255, 0.5);
   transform: scale(1.02);
+}
+
+/* ========================================
+   충돌 복구 패널 - 컴팩트 버전
+   ======================================== */
+
+.collision-panel-compact {
+  flex: 1;
+  min-height: 0;
+}
+
+.collision-body-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px !important;
+}
+
+.collision-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.collision-state-badge {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.collision-state-badge.state-ok {
+  background: var(--accent);
+  color: #050809;
+}
+
+.collision-state-badge.state-warning {
+  background: #ffa500;
+  color: #1a1000;
+  animation: pulse-warning 1s infinite;
+}
+
+.collision-state-badge.state-recovering {
+  background: #4a9eff;
+  color: #000a14;
+  animation: pulse-glow 1.5s infinite;
+}
+
+.collision-state-badge.state-moving {
+  background: #00bcd4;
+  color: #001a1f;
+}
+
+.collision-state-badge.state-unknown {
+  background: #666;
+  color: #fff;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes pulse-warning {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 165, 0, 0.6); }
+  50% { box-shadow: 0 0 16px rgba(255, 165, 0, 0.9); }
+}
+
+.btn-collision-sm {
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-collision-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-collision-sm.btn-recovery {
+  background: linear-gradient(135deg, #4a9eff 0%, #2196f3 100%);
+  color: #fff;
+  border-color: #4a9eff;
+}
+
+.btn-collision-sm.btn-recovery:hover:not(:disabled) {
+  box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+}
+
+.collision-test-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(255, 165, 0, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 165, 0, 0.2);
+}
+
+.collision-test-row .test-label {
+  font-size: 12px;
+  color: #ffa500;
+  flex-shrink: 0;
+}
+
+.btn-collision-sm.btn-test-slow {
+  background: linear-gradient(135deg, #ff9500 0%, #ff7b00 100%);
+  color: #1a0a00;
+  border-color: #ff9500;
+  padding: 4px 8px;
+}
+
+.btn-collision-sm.btn-test-slow:hover:not(:disabled) {
+  box-shadow: 0 0 8px rgba(255, 149, 0, 0.5);
+}
+
+.btn-collision-sm.btn-test-fast {
+  background: linear-gradient(135deg, #ff4d4d 0%, #e63946 100%);
+  color: #fff;
+  border-color: #ff4d4d;
+  padding: 4px 8px;
+}
+
+.btn-collision-sm.btn-test-fast:hover:not(:disabled) {
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.5);
+}
+
+.collision-log-compact {
+  background: #0a0f0f;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  min-height: 50px;
+  max-height: 60px;
+  overflow-y: auto;
+}
+
+.collision-log-compact .log-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+}
+
+.collision-log-compact .log-empty {
+  color: var(--text-sub);
 }
