@@ -212,7 +212,7 @@ button {
 
 .top-row {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1.3fr;
+  grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
   gap: 8px;
   flex: 0 0 55%;
   min-height: 0;
@@ -220,13 +220,14 @@ button {
 
 .bottom-row {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1.3fr;
+  grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
   gap: 8px;
   flex: 1;
   min-height: 0;
 }
 
 .camera-section,
+.armband-section,
 .robot-section,
 .scenario-section,
 .servo-section,
@@ -1046,6 +1047,143 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* Auth Status Box */
+.auth-status-box {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--border);
+}
+
+.auth-status-box .status-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.auth-status-box .status-icon {
+  font-size: 1.2rem;
+}
+
+.auth-status-box .recognized-text {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.auth-status-box .last-result {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.auth-status-box .last-result.success { color: #37ff9f; }
+.auth-status-box .last-result.failed { color: #ff4d4d; }
+
+/* Auth Status States */
+.auth-status-box.idle { border-color: var(--border); }
+.auth-status-box.listening { 
+  border-color: #ffa500; 
+  background: rgba(255, 165, 0, 0.1);
+  animation: pulse-listening 1s ease-in-out infinite;
+}
+.auth-status-box.processing { 
+  border-color: #00bcd4; 
+  background: rgba(0, 188, 212, 0.1);
+}
+.auth-status-box.success { 
+  border-color: #37ff9f; 
+  background: rgba(55, 255, 159, 0.1);
+}
+.auth-status-box.failed { 
+  border-color: #ff4d4d; 
+  background: rgba(255, 77, 77, 0.1);
+}
+.auth-status-box.error { 
+  border-color: #ff9800; 
+  background: rgba(255, 152, 0, 0.1);
+}
+
+@keyframes pulse-listening {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Current Passphrase Display */
+.current-passphrase {
+  padding: 10px;
+  background: rgba(55, 255, 159, 0.05);
+  border: 1px solid rgba(55, 255, 159, 0.3);
+  border-radius: 6px;
+}
+
+.current-passphrase .passphrase-label {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  margin-bottom: 6px;
+}
+
+.current-passphrase .passphrase-pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.current-passphrase .question { color: #ffa500; }
+.current-passphrase .answer { color: #37ff9f; }
+.current-passphrase .arrow { color: var(--text-sub); }
+.current-passphrase strong { color: var(--text-main); }
+
+/* Passphrase Settings */
+.passphrase-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.passphrase-settings label {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+}
+
+.passphrase-inputs {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.passphrase-inputs .passphrase-input {
+  flex: 1;
+  min-width: 80px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-main);
+  font-size: 0.85rem;
+}
+
+.passphrase-inputs .arrow-text {
+  color: var(--text-sub);
+  font-size: 0.9rem;
+}
+
+/* Help Text */
+.help-text {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-sub);
+  margin-top: 4px;
 }
 
 .voice-select {
@@ -2054,4 +2192,278 @@ button:disabled {
 
 .collision-log-compact .log-empty {
   color: var(--text-sub);
+}
+
+/* ==================== Armband Panel ==================== */
+
+.armband-panel {
+  flex: 1;
+  min-height: 0;
+}
+
+.armband-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px !important;
+}
+
+.armband-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.armband-status.detected {
+  background: rgba(55, 255, 159, 0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.armband-status.searching {
+  background: rgba(140, 180, 160, 0.1);
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+}
+
+.armband-status .status-icon {
+  font-size: 14px;
+}
+
+.armband-status .status-icon.scanning {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.armband-images {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+}
+
+.armband-img-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #0a0f0f;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.armband-img-container.raw {
+  flex: 2;
+}
+
+.armband-img-container.warped {
+  flex: 1;
+}
+
+.img-label {
+  padding: 4px 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-sub);
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid var(--border);
+}
+
+.armband-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  flex: 1;
+  min-height: 0;
+}
+
+.warped-img {
+  object-fit: contain;
+  background: #050809;
+}
+
+.armband-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+}
+
+.arrow-svg {
+  width: 30px;
+  height: 18px;
+}
+
+.arrow-label {
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+.armband-info {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 6px;
+  background: rgba(55, 255, 159, 0.05);
+  border-radius: 4px;
+  border: 1px solid rgba(55, 255, 159, 0.2);
+}
+
+.armband-info .info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.armband-info .info-label {
+  font-size: 9px;
+  color: var(--text-sub);
+  letter-spacing: 0.1em;
+}
+
+.armband-info .info-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Warped + OCR 섹션 */
+.armband-warped-section {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+.armband-warped-section .armband-img-container {
+  flex: 1;
+}
+
+/* OCR 결과 상자 */
+.ocr-result-box {
+  background: #0a0f0f;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ocr-result-box .ocr-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--text-sub);
+}
+
+.ocr-result-box .ocr-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ocr-result-box .ocr-text {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.ocr-result-box .ocr-empty {
+  font-size: 12px;
+  color: var(--text-sub);
+  font-style: italic;
+}
+
+.ocr-result-box .ocr-faction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ocr-result-box .ocr-confidence {
+  font-size: 9px;
+  color: var(--text-sub);
+}
+
+/* 진영별 스타일 */
+.ocr-result-box.ally {
+  border-color: var(--accent);
+  background: rgba(55, 255, 159, 0.08);
+}
+
+.ocr-result-box.ally .ocr-text {
+  color: var(--accent);
+}
+
+.ocr-result-box.ally .ocr-faction {
+  background: rgba(55, 255, 159, 0.2);
+  color: var(--accent);
+}
+
+.ocr-result-box.enemy {
+  border-color: var(--danger);
+  background: rgba(255, 77, 77, 0.08);
+}
+
+.ocr-result-box.enemy .ocr-text {
+  color: var(--danger);
+}
+
+.ocr-result-box.enemy .ocr-faction {
+  background: rgba(255, 77, 77, 0.2);
+  color: var(--danger);
+}
+
+.ocr-result-box.unknown {
+  border-color: var(--border);
+}
+
+.ocr-result-box.unknown .ocr-text {
+  color: var(--text-sub);
+}
+
+.ocr-result-box.unknown .ocr-faction {
+  background: rgba(140, 180, 160, 0.15);
+  color: var(--text-sub);
+}
+
+/* 감지 정보의 진영 배지 */
+.armband-info .faction-badge.ally {
+  background: rgba(55, 255, 159, 0.15);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.armband-info .faction-badge.ally .info-value {
+  color: var(--accent);
+}
+
+.armband-info .faction-badge.enemy {
+  background: rgba(255, 77, 77, 0.15);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.armband-info .faction-badge.enemy .info-value {
+  color: var(--danger);
 }
