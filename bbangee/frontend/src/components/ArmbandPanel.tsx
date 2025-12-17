@@ -3,9 +3,8 @@
  * 1차 피아식별 - Armband(완장) 감지 패널
  * 
  * - Raw: OBB 바운딩 박스가 표시된 원본 이미지
- * - Warped: ROI를 펼쳐서 정렬한 이미지
+ * - ROI: 회전+crop된 완장 이미지
  * - OCR: 한글 텍스트 인식 (아군/적군)
- * - 화살표로 처리 과정 시각화
  */
 
 import React, { useState, useEffect } from "react";
@@ -13,8 +12,8 @@ import { API_BASE, api } from "../api/client";
 
 const RAW_STREAM_URL = `${API_BASE}/armband/raw/stream`;
 const RAW_FRAME_URL = `${API_BASE}/armband/raw/frame`;
-const WARPED_STREAM_URL = `${API_BASE}/armband/warped/stream`;
-const WARPED_FRAME_URL = `${API_BASE}/armband/warped/frame`;
+const ROI_STREAM_URL = `${API_BASE}/armband/roi/stream`;
+const ROI_FRAME_URL = `${API_BASE}/armband/roi/frame`;
 
 interface DetectionInfo {
   detected: boolean;
@@ -51,7 +50,7 @@ export default function ArmbandPanel() {
   const [status, setStatus] = useState<ArmbandStatus | null>(null);
   const [usePolling, setUsePolling] = useState(false);
   const [rawFrameUrl, setRawFrameUrl] = useState<string | null>(null);
-  const [warpedFrameUrl, setWarpedFrameUrl] = useState<string | null>(null);
+  const [roiFrameUrl, setRoiFrameUrl] = useState<string | null>(null);
   const [streamKey, setStreamKey] = useState(0);
 
   // 상태 폴링
@@ -77,7 +76,7 @@ export default function ArmbandPanel() {
     const interval = setInterval(() => {
       const t = Date.now();
       setRawFrameUrl(`${RAW_FRAME_URL}?t=${t}`);
-      setWarpedFrameUrl(`${WARPED_FRAME_URL}?t=${t}`);
+      setRoiFrameUrl(`${ROI_FRAME_URL}?t=${t}`);
     }, 100); // 10fps
 
     return () => clearInterval(interval);
@@ -128,7 +127,7 @@ export default function ArmbandPanel() {
           )}
         </div>
 
-        {/* 이미지 영역: Raw → 화살표 → Warped + OCR */}
+        {/* 이미지 영역: Raw → 화살표 → ROI + OCR */}
         <div className="armband-images">
           {/* Raw 이미지 (OBB 박스) */}
           <div className="armband-img-container raw">
@@ -169,25 +168,25 @@ export default function ArmbandPanel() {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="arrow-label">WARP</span>
+            <span className="arrow-label">CROP</span>
           </div>
 
-          {/* Warped ROI 이미지 + OCR 결과 */}
+          {/* ROI 이미지 + OCR 결과 */}
           <div className="armband-warped-section">
             <div className="armband-img-container warped">
-              <div className="img-label">ALIGNED ROI</div>
+              <div className="img-label">ROI</div>
               {usePolling ? (
                 <img 
-                  src={warpedFrameUrl || ""} 
-                  alt="Warped ROI"
+                  src={roiFrameUrl || ""} 
+                  alt="ROI"
                   className="armband-img warped-img"
                   onError={() => {}}
                 />
               ) : (
                 <img 
-                  key={`warped-${streamKey}`}
-                  src={WARPED_STREAM_URL}
-                  alt="Warped Stream"
+                  key={`roi-${streamKey}`}
+                  src={ROI_STREAM_URL}
+                  alt="ROI Stream"
                   className="armband-img warped-img"
                   onError={handleStreamError}
                 />

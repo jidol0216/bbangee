@@ -47,7 +47,7 @@ armband_state = {
     "node": None,
     "latest_frame": None,
     "latest_raw_result": None,      # OBB 박스가 그려진 이미지
-    "latest_warped_result": None,   # 펼친 ROI 이미지
+    "latest_roi_result": None,      # ROI 이미지 (회전+crop)
     "detection_info": None,         # 감지 정보
     "ocr_result": None,             # OCR 결과
     "running": False,
@@ -111,6 +111,32 @@ def warp_obb_roi(image: np.ndarray, obb_points: np.ndarray,
     warped = cv2.warpPerspective(image, M, (w, h))
     
     return warped
+
+
+def crop_obb_roi(image: np.ndarray, obb_points: np.ndarray,
+                 output_size: Tuple[int, int] = WARPED_SIZE) -> np.ndarray:
+    """
+    OBB ROI를 단순 crop (회전 없음, 외접 사각형으로 자르기)
+    """
+    # OBB 포인트들의 외접 직사각형 (axis-aligned bounding box)
+    x_coords = obb_points[:, 0]
+    y_coords = obb_points[:, 1]
+    
+    x1 = max(0, int(np.min(x_coords)))
+    y1 = max(0, int(np.min(y_coords)))
+    x2 = min(image.shape[1], int(np.max(x_coords)))
+    y2 = min(image.shape[0], int(np.max(y_coords)))
+    
+    # Crop
+    cropped = image[y1:y2, x1:x2]
+    
+    # 출력 크기로 리사이즈
+    if cropped.size > 0:
+        cropped = cv2.resize(cropped, output_size)
+    else:
+        cropped = np.zeros((output_size[1], output_size[0], 3), dtype=np.uint8)
+    
+    return cropped
 
 
 def recognize_armband_text(warped_image: np.ndarray) -> dict:
@@ -260,11 +286,11 @@ class ArmbandDetectorNode(Node):
                 # Raw 이미지에 OBB 그리기
                 raw_result = draw_obb_detection(raw_result, obb_points, best_conf, class_name)
                 
-                # Warped ROI 생성
-                warped_result = warp_obb_roi(cv_image, obb_points)
+                # ROI 생성 (회전 후 자르기)
+                roi_result = crop_obb_roi(cv_image, obb_points)
                 
-                # OCR 실행 (한글 텍스트 인식)
-                ocr_result = recognize_armband_text(warped_result)
+                # OCR 실행
+                ocr_result = recognize_armband_text(roi_result)
                 
                 # 감지 정보
                 center = np.mean(obb_points, axis=0)
@@ -282,13 +308,14 @@ class ArmbandDetectorNode(Node):
                 cv2.putText(raw_result, "No Armband Detected", (10, 30),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (100, 100, 100), 2)
                 detection_info = {"detected": False}
+                roi_result = None
                 ocr_result = None
             
             # 상태 업데이트
             with state_lock:
                 armband_state["latest_frame"] = cv_image
                 armband_state["latest_raw_result"] = raw_result
-                armband_state["latest_warped_result"] = warped_result
+                armband_state["latest_roi_result"] = roi_result
                 armband_state["detection_info"] = detection_info
                 armband_state["ocr_result"] = ocr_result
                 armband_state["last_update"] = time.time()
@@ -379,11 +406,11 @@ def get_raw_stream():
     return StreamingResponse(generate(), media_type="multipart/x-mixed-replace; boundary=frame")
 
 
-@router.get("/warped/frame")
-def get_warped_frame():
-    """Warped ROI 이미지 - 단일 프레임"""
+@router.get("/roi/frame")
+def get_roi_frame():
+    """ROI 이미지 - 단일 프레임 (회전+crop)"""
     with state_lock:
-        frame = armband_state.get("latest_warped_result")
+        frame = armband_state.get("latest_roi_result")
         info = armband_state.get("detection_info")
     
     if frame is None or (info and not info.get("detected", False)):
@@ -397,13 +424,13 @@ def get_warped_frame():
     return Response(content=jpeg.tobytes(), media_type="image/jpeg")
 
 
-@router.get("/warped/stream")
-def get_warped_stream():
-    """Warped ROI MJPEG 스트림"""
+@router.get("/roi/stream")
+def get_roi_stream():
+    """ROI MJPEG 스트림 (회전+crop)"""
     def generate():
         while True:
             with state_lock:
-                frame = armband_state.get("latest_warped_result")
+                frame = armband_state.get("latest_roi_result")
                 info = armband_state.get("detection_info")
             
             if frame is not None and info and info.get("detected", False):
@@ -419,6 +446,6 @@ def get_warped_stream():
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
             
-            time.sleep(0.1)  # ~10fps (ROI는 덜 자주 업데이트해도 됨)
+            time.sleep(0.1)
     
     return StreamingResponse(generate(), media_type="multipart/x-mixed-replace; boundary=frame")
