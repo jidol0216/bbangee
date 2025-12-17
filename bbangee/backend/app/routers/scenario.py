@@ -53,6 +53,15 @@ class ScenarioManager:
         # 암구호 문답식 (Challenge-Response)
         self.password_challenge = "로키"  # 로봇이 물어보는 질문
         self.password_response = "협동"   # 사용자가 답해야 하는 응답
+        
+        # OCR 자동 피아식별 설정
+        self.ocr_consecutive_count = 0      # 연속 OCR 성공 카운트
+        self.ocr_consecutive_threshold = 3  # 자동 식별에 필요한 연속 성공 횟수
+        self.ocr_confidence_threshold = 0.6 # 자동 식별에 필요한 최소 신뢰도
+        self.ocr_last_faction = None        # 마지막 OCR 인식 결과
+        self.ocr_fail_count = 0             # 완장 감지 O, OCR 실패 카운트
+        self.ocr_fail_tts_threshold = 10    # OCR 실패 TTS 안내 임계값
+        self.ocr_fail_tts_played = False    # OCR 실패 TTS 재생 여부
     
     def set_password(self, challenge: str, response: str = None) -> dict:
         """암구호 변경 (문답식)"""
@@ -132,7 +141,7 @@ class ScenarioManager:
         self._add_history("접근자 감지됨")
         
         # TTS 실행 (별도 스레드)
-        await self._play_tts("정지! 손 들어! 신원을 확인합니다.")
+        await self._play_tts("정지! 신원을 확인합니다.")
         
         # 브로드캐스트
         await self.broadcast({
@@ -290,11 +299,116 @@ class ScenarioManager:
         except Exception as e:
             print(f"추적 속도 초기화 실패: {e}")
     
+    async def process_ocr_result(self, armband_detected: bool, faction: str, confidence: float) -> dict:
+        """
+        OCR 결과 처리 및 자동 피아식별
+        
+        Args:
+            armband_detected: 완장 감지 여부
+            faction: OCR 인식 결과 ("ALLY", "ENEMY", "UNKNOWN")
+            confidence: OCR 신뢰도 (0~1)
+        
+        Returns:
+            처리 결과
+        """
+        # DETECTED 상태가 아니면 무시
+        if self.state != ScenarioState.DETECTED:
+            return {"success": False, "message": "DETECTED 상태가 아닙니다"}
+        
+        # 완장이 감지되었으나 OCR이 실패한 경우
+        if armband_detected and faction in ["UNKNOWN", "ERROR", ""]:
+            self.ocr_fail_count += 1
+            self.ocr_consecutive_count = 0  # 연속 카운트 리셋
+            self.ocr_last_faction = None
+            
+            # OCR 실패가 반복되면 TTS 안내 (한 번만)
+            if self.ocr_fail_count >= self.ocr_fail_tts_threshold and not self.ocr_fail_tts_played:
+                await self._play_tts("카메라 렌즈에 피아식별띠를 잘 보이게 위치시키십시오.")
+                self.ocr_fail_tts_played = True
+                self._add_history("OCR 실패 반복 - TTS 안내")
+                
+                # 브로드캐스트
+                await self.broadcast({
+                    "type": "ocr_guide",
+                    "message": "피아식별띠를 카메라에 잘 보이게 해주세요",
+                    "ocr_fail_count": self.ocr_fail_count
+                })
+            
+            return {
+                "success": True,
+                "action": "waiting",
+                "ocr_fail_count": self.ocr_fail_count,
+                "message": "완장 감지됨, OCR 인식 대기 중"
+            }
+        
+        # 완장이 감지되지 않은 경우
+        if not armband_detected:
+            self.ocr_consecutive_count = 0
+            self.ocr_last_faction = None
+            return {
+                "success": True,
+                "action": "waiting",
+                "message": "완장 감지 대기 중"
+            }
+        
+        # OCR 성공 + 신뢰도 충분
+        if faction in ["ALLY", "ENEMY"] and confidence >= self.ocr_confidence_threshold:
+            # 같은 faction이 연속으로 인식되는지 확인
+            if self.ocr_last_faction == faction:
+                self.ocr_consecutive_count += 1
+            else:
+                self.ocr_consecutive_count = 1
+                self.ocr_last_faction = faction
+            
+            # OCR 실패 카운트 리셋
+            self.ocr_fail_count = 0
+            self.ocr_fail_tts_played = False
+            
+            # 연속 임계값 도달 시 자동 피아식별
+            if self.ocr_consecutive_count >= self.ocr_consecutive_threshold:
+                is_ally = (faction == "ALLY")
+                self._add_history(f"OCR 자동 피아식별: {faction} (연속 {self.ocr_consecutive_count}회, 신뢰도 {confidence:.0%})")
+                
+                # 자동 식별 실행
+                result = await self.identify_person(is_ally)
+                result["auto_identified"] = True
+                result["ocr_confidence"] = confidence
+                result["consecutive_count"] = self.ocr_consecutive_count
+                
+                return result
+            
+            # 연속 카운트 진행 중
+            return {
+                "success": True,
+                "action": "accumulating",
+                "faction": faction,
+                "confidence": confidence,
+                "consecutive_count": self.ocr_consecutive_count,
+                "threshold": self.ocr_consecutive_threshold,
+                "message": f"{faction} 인식 중 ({self.ocr_consecutive_count}/{self.ocr_consecutive_threshold})"
+            }
+        
+        # 신뢰도 부족
+        return {
+            "success": True,
+            "action": "low_confidence",
+            "faction": faction,
+            "confidence": confidence,
+            "message": f"신뢰도 부족: {confidence:.0%} < {self.ocr_confidence_threshold:.0%}"
+        }
+    
     async def reset(self) -> dict:
         """시나리오 리셋"""
         self.state = ScenarioState.IDLE
         self.person_type = PersonType.UNKNOWN
         self.detection_time = None
+        
+        # OCR 상태 리셋
+        self.ocr_consecutive_count = 0
+        self.ocr_last_faction = None
+        self.ocr_fail_count = 0
+        self.ocr_fail_tts_played = False
+        
         self._add_history("시나리오 리셋")
         
         # 추적 속도 초기화
@@ -421,6 +535,11 @@ class SetPasswordRequest(BaseModel):
     challenge: str  # 질문 암구호 (로봇이 물어보는 것)
     response: str = None  # 응답 암구호 (사용자가 답해야 하는 것)
 
+class OcrResultRequest(BaseModel):
+    armband_detected: bool  # 완장 감지 여부
+    faction: str            # OCR 인식 결과 ("ALLY", "ENEMY", "UNKNOWN")
+    confidence: float       # OCR 신뢰도 (0~1)
+
 
 @router.get("/status")
 async def get_status():
@@ -450,6 +569,22 @@ async def submit_password(req: PasswordRequest):
 async def reset_scenario():
     """시나리오 리셋"""
     return await scenario_manager.reset()
+
+
+@router.post("/ocr")
+async def process_ocr(req: OcrResultRequest):
+    """
+    OCR 결과 처리 (armband 모듈에서 호출)
+    
+    완장 감지 + OCR 결과를 받아서 자동 피아식별 처리
+    - 연속 3회 같은 faction 감지 시 자동 식별
+    - 완장 감지 O + OCR 실패 반복 시 TTS 안내
+    """
+    return await scenario_manager.process_ocr_result(
+        armband_detected=req.armband_detected,
+        faction=req.faction,
+        confidence=req.confidence
+    )
 
 
 @router.get("/password")

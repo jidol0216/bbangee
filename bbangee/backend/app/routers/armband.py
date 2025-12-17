@@ -12,6 +12,7 @@ import numpy as np
 import threading
 import time
 import io
+import requests
 from fastapi import APIRouter, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -33,7 +34,7 @@ router = APIRouter(prefix="/armband", tags=["armband"])
 MODEL_PATH = "/home/rokey/ros2_ws/src/obb/runs/obb/armband_v1/weights/best.pt"
 COLOR_TOPIC = "/camera/camera/color/image_raw"
 CONFIDENCE_THRESHOLD = 0.5
-WARPED_SIZE = (200, 80)  # 펼친 ROI 크기 (가로, 세로)
+WARPED_SIZE = (150, 150)  # ROI 출력 크기 (정사각형, 비율 유지)
 
 # 아군/적군 판별 키워드
 ALLY_KEYWORDS = ["아군"]      # 아군 키워드
@@ -59,6 +60,40 @@ state_lock = threading.Lock()
 print("EasyOCR 한글 리더 로드 중...")
 ocr_reader = easyocr.Reader(['ko'], gpu=True)
 print("EasyOCR 로드 완료!")
+
+
+# ==================== 시나리오 연동 ====================
+
+def send_ocr_to_scenario(armband_detected: bool, faction: str, confidence: float):
+    """
+    OCR 결과를 시나리오 모듈로 전송 (비동기 HTTP 호출)
+    자동 피아식별을 위해 사용
+    """
+    import requests
+    
+    try:
+        # 시나리오 API 호출 (non-blocking)
+        response = requests.post(
+            "http://localhost:8000/scenario/ocr",
+            json={
+                "armband_detected": armband_detected,
+                "faction": faction,
+                "confidence": confidence
+            },
+            timeout=0.5  # 빠른 타임아웃 (스트림 차단 방지)
+        )
+        
+        result = response.json()
+        
+        # 자동 식별 발생 시 로그
+        if result.get("auto_identified"):
+            print(f"🎯 자동 피아식별 완료: {faction} (신뢰도: {confidence:.0%})")
+            
+    except requests.exceptions.Timeout:
+        pass  # 타임아웃 무시 (스트림 계속 진행)
+    except Exception as e:
+        # 시나리오 연동 실패는 무시 (armband 감지는 계속 진행)
+        pass
 
 
 # ==================== Helper Functions ====================
@@ -114,29 +149,61 @@ def warp_obb_roi(image: np.ndarray, obb_points: np.ndarray,
 
 
 def crop_obb_roi(image: np.ndarray, obb_points: np.ndarray,
-                 output_size: Tuple[int, int] = WARPED_SIZE) -> np.ndarray:
+                 output_size: Tuple[int, int] = WARPED_SIZE,
+                 padding_ratio: float = 0.15) -> np.ndarray:
     """
     OBB ROI를 단순 crop (회전 없음, 외접 사각형으로 자르기)
+    원본 비율 유지하면서 출력 크기에 맞춤
+    
+    Args:
+        padding_ratio: 바운딩 박스 대비 여유분 비율 (0.15 = 15% 여유)
     """
     # OBB 포인트들의 외접 직사각형 (axis-aligned bounding box)
     x_coords = obb_points[:, 0]
     y_coords = obb_points[:, 1]
     
-    x1 = max(0, int(np.min(x_coords)))
-    y1 = max(0, int(np.min(y_coords)))
-    x2 = min(image.shape[1], int(np.max(x_coords)))
-    y2 = min(image.shape[0], int(np.max(y_coords)))
+    x1 = int(np.min(x_coords))
+    y1 = int(np.min(y_coords))
+    x2 = int(np.max(x_coords))
+    y2 = int(np.max(y_coords))
+    
+    # 여유분(padding) 추가
+    box_w = x2 - x1
+    box_h = y2 - y1
+    pad_x = int(box_w * padding_ratio)
+    pad_y = int(box_h * padding_ratio)
+    
+    # 여유분 적용 (이미지 경계 체크)
+    x1 = max(0, x1 - pad_x)
+    y1 = max(0, y1 - pad_y)
+    x2 = min(image.shape[1], x2 + pad_x)
+    y2 = min(image.shape[0], y2 + pad_y)
     
     # Crop
     cropped = image[y1:y2, x1:x2]
     
-    # 출력 크기로 리사이즈
-    if cropped.size > 0:
-        cropped = cv2.resize(cropped, output_size)
-    else:
-        cropped = np.zeros((output_size[1], output_size[0], 3), dtype=np.uint8)
+    if cropped.size == 0:
+        return np.zeros((output_size[1], output_size[0], 3), dtype=np.uint8)
     
-    return cropped
+    # 원본 비율 유지하면서 출력 크기에 맞춤
+    h, w = cropped.shape[:2]
+    target_w, target_h = output_size
+    
+    # 비율 계산
+    scale = min(target_w / w, target_h / h)
+    new_w = int(w * scale)
+    new_h = int(h * scale)
+    
+    # 리사이즈
+    resized = cv2.resize(cropped, (new_w, new_h))
+    
+    # 출력 캔버스에 중앙 배치
+    canvas = np.zeros((target_h, target_w, 3), dtype=np.uint8)
+    x_offset = (target_w - new_w) // 2
+    y_offset = (target_h - new_h) // 2
+    canvas[y_offset:y_offset+new_h, x_offset:x_offset+new_w] = resized
+    
+    return canvas
 
 
 def recognize_armband_text(warped_image: np.ndarray) -> dict:
@@ -303,6 +370,9 @@ class ArmbandDetectorNode(Node):
                     "ocr_confidence": ocr_result["confidence"],
                     "faction": ocr_result["faction"],
                 }
+                
+                # 시나리오에 OCR 결과 전송 (자동 피아식별)
+                send_ocr_to_scenario(True, ocr_result["faction"], ocr_result["confidence"])
             else:
                 # 감지 없음
                 cv2.putText(raw_result, "No Armband Detected", (10, 30),
@@ -310,6 +380,9 @@ class ArmbandDetectorNode(Node):
                 detection_info = {"detected": False}
                 roi_result = None
                 ocr_result = None
+                
+                # 시나리오에 감지 없음 전송
+                send_ocr_to_scenario(False, "UNKNOWN", 0)
             
             # 상태 업데이트
             with state_lock:
