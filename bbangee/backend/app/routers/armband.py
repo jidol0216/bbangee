@@ -4,7 +4,7 @@ Armband Detection Router - OBB 기반 완장 감지 API
 1차 피아식별용 완장 감지
 - Raw 이미지: OBB 바운딩 박스가 표시된 원본
 - Warped 이미지: ROI를 펼쳐서 정렬한 이미지
-- OCR: 완장 텍스트 인식 (아군/적군)
+- OCR: 완장 텍스트 인식 (통일/멸공)
 """
 
 import cv2
@@ -63,50 +63,26 @@ print("EasyOCR 로드 완료!")
 
 # ==================== Helper Functions ====================
 
-def order_points_for_text(pts: np.ndarray) -> np.ndarray:
+def order_points(pts: np.ndarray) -> np.ndarray:
     """
-    OBB 4개 점을 텍스트 읽기에 적합하게 정렬
-    - 긴 변이 수평이 되도록 (가로로 긴 완장 가정)
-    - 순서: top-left, top-right, bottom-right, bottom-left
+    OBB 4개 점을 순서대로 정렬 (top-left, top-right, bottom-right, bottom-left)
     """
-    pts = pts.astype(np.float32)
-    
-    # 4개 점의 중심
+    # 중심점 계산
     center = np.mean(pts, axis=0)
     
-    # 각 점을 중심 기준 각도로 정렬 (반시계)
+    # 각 점의 각도 계산
     angles = np.arctan2(pts[:, 1] - center[1], pts[:, 0] - center[0])
+    
+    # 각도로 정렬 (반시계 방향)
     sorted_indices = np.argsort(angles)
     sorted_pts = pts[sorted_indices]
     
-    # 인접한 점 사이의 거리 계산 (4개 변의 길이)
-    edges = []
-    for i in range(4):
-        p1 = sorted_pts[i]
-        p2 = sorted_pts[(i + 1) % 4]
-        dist = np.linalg.norm(p2 - p1)
-        edges.append(dist)
+    # top-left가 첫 번째가 되도록 조정
+    # 가장 왼쪽 위 점 찾기
+    s = sorted_pts.sum(axis=1)
+    tl_idx = np.argmin(s)
     
-    # 가장 긴 변 찾기
-    # edges[0]: sorted_pts[0]->sorted_pts[1]
-    # edges[1]: sorted_pts[1]->sorted_pts[2]
-    # ...
-    
-    # 0번과 2번 변이 짝, 1번과 3번 변이 짝 (직사각형)
-    width_pair = edges[0] + edges[2]  # 0-1, 2-3 변
-    height_pair = edges[1] + edges[3]  # 1-2, 3-0 변
-    
-    # 가로가 더 길어야 함 (width > height)
-    # 만약 height_pair가 더 길면 90도 회전 필요
-    if height_pair > width_pair:
-        # 점 순서를 1칸 밀어서 90도 회전 효과
-        sorted_pts = np.roll(sorted_pts, -1, axis=0)
-    
-    # top-left 찾기 (x+y가 가장 작은 점)
-    sums = sorted_pts.sum(axis=1)
-    tl_idx = np.argmin(sums)
-    
-    # top-left가 첫 번째가 되도록 회전
+    # 순서 재배열
     ordered = np.roll(sorted_pts, -tl_idx, axis=0)
     
     return ordered
@@ -116,10 +92,9 @@ def warp_obb_roi(image: np.ndarray, obb_points: np.ndarray,
                  output_size: Tuple[int, int] = WARPED_SIZE) -> np.ndarray:
     """
     OBB ROI를 직사각형으로 펼치기 (perspective transform)
-    - 긴 변이 수평이 되도록 정렬
     """
-    # 점 순서 정렬 (텍스트 읽기에 적합하게)
-    ordered_pts = order_points_for_text(obb_points)
+    # 점 순서 정렬
+    ordered_pts = order_points(obb_points)
     
     # 목표 좌표 (직사각형)
     w, h = output_size
@@ -138,17 +113,16 @@ def warp_obb_roi(image: np.ndarray, obb_points: np.ndarray,
     return warped
 
 
-def recognize_armband_text(warped_image: np.ndarray, draw_boxes: bool = True) -> dict:
+def recognize_armband_text(warped_image: np.ndarray) -> dict:
     """
-    Warped ROI 이미지에서 한글 텍스트 인식 + bbox 그리기
+    Warped ROI 이미지에서 한글 텍스트 인식
     
     Returns:
         {
-            "text": "아군",           # 인식된 텍스트
+            "text": "통일",           # 인식된 텍스트
             "confidence": 0.99,       # 신뢰도
             "faction": "ALLY",        # ALLY, ENEMY, UNKNOWN
-            "raw_results": [...],     # 전체 OCR 결과
-            "annotated_image": np.ndarray  # OCR bbox가 그려진 이미지
+            "raw_results": [...]      # 전체 OCR 결과
         }
     """
     global ocr_reader
@@ -157,21 +131,17 @@ def recognize_armband_text(warped_image: np.ndarray, draw_boxes: bool = True) ->
         # OCR 실행
         results = ocr_reader.readtext(warped_image)
         
-        # bbox 그리기 위한 이미지 복사
-        annotated = warped_image.copy()
-        
         if not results:
             return {
                 "text": "",
                 "confidence": 0,
                 "faction": "UNKNOWN",
-                "raw_results": [],
-                "annotated_image": annotated
+                "raw_results": []
             }
         
         # 가장 높은 신뢰도 결과 선택
         best_result = max(results, key=lambda x: x[2])
-        best_bbox, text, conf = best_result
+        bbox, text, conf = best_result
         
         # 아군/적군 판별
         faction = "UNKNOWN"
@@ -184,37 +154,11 @@ def recognize_armband_text(warped_image: np.ndarray, draw_boxes: bool = True) ->
                 faction = "ENEMY"
                 break
         
-        # OCR bbox 그리기
-        if draw_boxes:
-            for bbox, txt, c in results:
-                pts = np.array(bbox, dtype=np.int32)
-                
-                # faction에 따른 색상
-                if faction == "ALLY":
-                    color = (0, 255, 0)   # 초록 (아군)
-                elif faction == "ENEMY":
-                    color = (0, 0, 255)   # 빨강 (적군)
-                else:
-                    color = (128, 128, 128)  # 회색 (미확인)
-                
-                # bbox 그리기
-                cv2.polylines(annotated, [pts], True, color, 2)
-                
-                # 텍스트 라벨
-                label = f"{txt} ({c:.0%})"
-                label_pos = (pts[0][0], pts[0][1] - 5)
-                
-                # 한글 표시를 위해 OpenCV putText 대신 간단한 영어 라벨만
-                # (한글은 웹에서 표시)
-                cv2.putText(annotated, f"{c:.0%}", label_pos,
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-        
         return {
             "text": text,
             "confidence": float(conf),
             "faction": faction,
-            "raw_results": [(str(r[1]), float(r[2])) for r in results],
-            "annotated_image": annotated
+            "raw_results": [(str(r[1]), float(r[2])) for r in results]
         }
         
     except Exception as e:
@@ -223,8 +167,7 @@ def recognize_armband_text(warped_image: np.ndarray, draw_boxes: bool = True) ->
             "text": "",
             "confidence": 0,
             "faction": "ERROR",
-            "raw_results": [],
-            "annotated_image": warped_image.copy()
+            "raw_results": []
         }
 
 
@@ -318,13 +261,10 @@ class ArmbandDetectorNode(Node):
                 raw_result = draw_obb_detection(raw_result, obb_points, best_conf, class_name)
                 
                 # Warped ROI 생성
-                warped_roi = warp_obb_roi(cv_image, obb_points)
+                warped_result = warp_obb_roi(cv_image, obb_points)
                 
-                # OCR 실행 (한글 텍스트 인식 + bbox 그리기)
-                ocr_result = recognize_armband_text(warped_roi)
-                
-                # warped_result는 OCR bbox가 그려진 이미지 사용
-                warped_result = ocr_result.get("annotated_image", warped_roi)
+                # OCR 실행 (한글 텍스트 인식)
+                ocr_result = recognize_armband_text(warped_result)
                 
                 # 감지 정보
                 center = np.mean(obb_points, axis=0)
@@ -395,18 +335,7 @@ def get_armband_status():
     """Armband 감지 상태 조회 (OCR 결과 포함)"""
     with state_lock:
         info = armband_state.get("detection_info")
-        ocr_raw = armband_state.get("ocr_result")
-        
-        # OCR 결과에서 이미지 제외 (JSON 직렬화 불가)
-        ocr = None
-        if ocr_raw:
-            ocr = {
-                "text": ocr_raw.get("text", ""),
-                "confidence": ocr_raw.get("confidence", 0),
-                "faction": ocr_raw.get("faction", "UNKNOWN"),
-                "raw_results": ocr_raw.get("raw_results", [])
-            }
-        
+        ocr = armband_state.get("ocr_result")
         return {
             "running": armband_state["running"],
             "last_update": armband_state["last_update"],
