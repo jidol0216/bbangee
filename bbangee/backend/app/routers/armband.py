@@ -32,7 +32,8 @@ router = APIRouter(prefix="/armband", tags=["armband"])
 
 # ==================== 설정 ====================
 MODEL_PATH = "/home/rokey/ros2_ws/src/obb/runs/obb/armband_v1/weights/best.pt"
-COLOR_TOPIC = "/camera/camera/color/image_raw"
+# 180도 회전된 카메라용 flipped 토픽 사용
+COLOR_TOPIC = "/camera/flipped/color/image_raw"
 CONFIDENCE_THRESHOLD = 0.5
 WARPED_SIZE = (150, 150)  # ROI 출력 크기 (정사각형, 비율 유지)
 
@@ -390,7 +391,13 @@ class ArmbandDetectorNode(Node):
                 armband_state["latest_raw_result"] = raw_result
                 armband_state["latest_roi_result"] = roi_result
                 armband_state["detection_info"] = detection_info
-                armband_state["ocr_result"] = ocr_result
+                # OCR 결과: 감지되지 않은 경우에도 이전 결과 유지 (3초간)
+                if ocr_result is not None:
+                    armband_state["ocr_result"] = ocr_result
+                    armband_state["ocr_result_time"] = time.time()
+                elif armband_state.get("ocr_result_time", 0) + 3.0 < time.time():
+                    # 3초 이상 지난 경우 초기화
+                    armband_state["ocr_result"] = None
                 armband_state["last_update"] = time.time()
                 
         except Exception as e:

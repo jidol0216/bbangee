@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
-from app.routers import people, access, voice, devices, ros2, scenario, robot, armband, gripper
+from app.routers import people, access, voice, devices
 
 app = FastAPI(title="Security System API")
 
@@ -12,7 +12,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "http://192.168.10.50:5173",
+        "http://192.168.10.56:5173",
         
     ],
     allow_credentials=True,
@@ -29,11 +29,6 @@ app.include_router(people.router)
 app.include_router(access.router)
 app.include_router(voice.router)
 app.include_router(devices.router)
-app.include_router(ros2.router)
-app.include_router(scenario.router)
-app.include_router(robot.router)
-app.include_router(armband.router)
-app.include_router(gripper.router)
 
 @app.get("/")
 def hello():

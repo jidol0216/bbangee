@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import CameraPanel from "../components/CameraPanel";
 import ServoControl from "../components/ServoControl";
+import GripperControl from "../components/GripperControl";
 import PersonnelPanel from "../components/PersonnelPanel";
 import RobotPanel from "../components/RobotPanel";
 import VoicePanel from "../components/VoicePanel";
@@ -64,10 +65,13 @@ export default function MainPage({ onLogout }: Props) {
           </div>
         </section>
 
-        {/* 하단 행: 서보 | 음성+충돌 | 인적사항 */}
+        {/* 하단 행: 서보 | 그리퍼 | 음성+충돌 | 인적사항 */}
         <section className="bottom-row">
           <div className="servo-section">
             <ServoControl />
+          </div>
+          <div className="gripper-section">
+            <GripperControl />
           </div>
           <div className="voice-collision-section">
             <VoicePanel />

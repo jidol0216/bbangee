@@ -144,11 +144,12 @@ export default function RobotPanel() {
             <div className="joint-display">
               <h5>관절 각도 (deg)</h5>
               <div className="joint-grid">
-                {robot.joint_positions.map((pos, i) => (
+                {/* 항상 J1~J6만 표시 (6축 로봇) */}
+                {[0, 1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="joint-item">
                     <span className="joint-label">J{i + 1}</span>
                     <span className="joint-value">
-                      {pos.toFixed(1)}°
+                      {(robot.joint_positions[i] ?? 0).toFixed(1)}°
                     </span>
                   </div>
                 ))}
@@ -232,6 +233,14 @@ export default function RobotPanel() {
               title="준비 위치로 이동"
             >
               📍 준비
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={() => sendCommand("j6_rotate")}
+              disabled={loading || !controlAllowed || jointTracking?.state === 'TRACKING'}
+              title="J6 180도 회전 (카메라 방향 전환)"
+            >
+              📷 카메라 회전
             </button>
           </div>
           

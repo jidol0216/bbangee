@@ -188,10 +188,14 @@ def run_scenario(scenario_num: int, delay: float = 1.0):
         elif state == "ENEMY_CRITICAL":
             print_error(f"🚨 결과: {state}")
             print_info("TTS: '경고! 기밀 유출 의심! 비상 알림 발령!'")
+            print_info("     + 부저음 (비프 3회)")
+            print_info("     + TTS: '경고! 경고! 경고!'")
             print_info("로봇: 추적 속도 1.5배 가속")
         elif state == "ENEMY_ENGAGE":
             print_error(f"🔴 결과: {state}")
-            print_info("TTS: '침입자 발견! 대응 조치!'")
+            print_info("🔫 서보모터 ON (조준)")
+            print_info("TTS: '코드 레드 발령, 코드 레드 발령, 침입자 대응 조치할 것!'")
+            print_info("     + 사이렌 (TTS 2.5초 후 시작, 8초간 재생)")
             print_info("로봇: 추적 속도 1.5배 가속")
         
         print()

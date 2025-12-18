@@ -36,6 +36,8 @@ export default function ScenarioPanel() {
   const [currentChallenge, setCurrentChallenge] = useState("로키");
   const [currentResponse, setCurrentResponse] = useState("협동");
   const [motionLoading, setMotionLoading] = useState(false);
+  const [passwordResult, setPasswordResult] = useState<{ correct: boolean; message: string } | null>(null);
+  const [voiceStatus, setVoiceStatus] = useState<{ status: string; recognized_text: string } | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   const fetchStatus = useCallback(async () => {
@@ -48,6 +50,9 @@ export default function ScenarioPanel() {
       if (res.data.password_response) {
         setCurrentResponse(res.data.password_response);
       }
+      // 음성 인식 상태도 가져오기
+      const voiceRes = await api.get("/voice/status");
+      setVoiceStatus(voiceRes.data);
     } catch (err) {
       console.error(err);
     }
@@ -59,11 +64,21 @@ export default function ScenarioPanel() {
     wsRef.current = ws;
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
+      console.log("[ScenarioPanel] WS received:", data);
       fetchStatus();
       if (data.popup?.show) {
         setPopup({ show: true, title: data.popup.title, type: data.popup.buttons ? "identify" : "password" });
       }
       if (data.type === "scenario_result") {
+        // 암구호 결과 UI 업데이트 (보이스/웹 모두 적용)
+        console.log("[ScenarioPanel] Setting password result:", data.is_correct, data.message);
+        const spokenPassword = data.spoken_password || "";
+        setPasswordResult({
+          correct: data.is_correct,
+          message: data.is_correct 
+            ? `✅ 정답! "${spokenPassword}" 암구호 인증 성공` 
+            : `❌ 오답! "${spokenPassword}" 암구호 인증 실패`
+        });
         setPopup({ show: true, title: data.message, type: "result" });
       }
     };
@@ -71,17 +86,31 @@ export default function ScenarioPanel() {
     return () => { clearInterval(ping); ws.close(); };
   }, [fetchStatus]);
 
-  // 상태가 DETECTED일 때 자동으로 피아식별 팝업 표시
-  useEffect(() => {
-    if (status?.state === "DETECTED" && !popup?.show) {
-      setPopup({ show: true, title: "⚠️ 접근자 감지", type: "identify" });
-    }
-  }, [status?.state]);
+  // 상태가 DETECTED일 때 자동으로 피아식별 팝업 표시 (비활성화)
+  // useEffect(() => {
+  //   if (status?.state === "DETECTED" && !popup?.show) {
+  //     setPopup({ show: true, title: "⚠️ 접근자 감지", type: "identify" });
+  //   }
+  // }, [status?.state]);
 
   const handleDetect = async () => { setLoading(true); await api.post("/scenario/detect").catch(()=>{}); setLoading(false); };
-  const handleIdentify = async (ally: boolean) => { setPopup(null); setLoading(true); await api.post("/scenario/identify", { is_ally: ally }).catch(()=>{}); setLoading(false); };
-  const handlePassword = async () => { setPopup(null); setLoading(true); await api.post("/scenario/password", { password: passwordInput }).catch(()=>{}); setPasswordInput(""); setLoading(false); };
-  const handleReset = async () => { setPopup(null); setLoading(true); await api.post("/scenario/reset").catch(()=>{}); setLoading(false); };
+  const handleIdentify = async (ally: boolean) => { setPopup(null); setLoading(true); await api.post("/scenario/identify", { is_ally: ally }).catch(()=>{}); setLoading(false); setPasswordResult(null); };
+  const handlePassword = async () => {
+    setPopup(null);
+    setLoading(true);
+    try {
+      const res = await api.post("/scenario/password", { password: passwordInput });
+      if (res.data) {
+        setPasswordResult({
+          correct: res.data.is_correct,
+          message: res.data.is_correct ? `✅ 정답! "${passwordInput}"` : `❌ 오답! "${passwordInput}" (정답: "${currentResponse}")`
+        });
+      }
+    } catch (e) { /* ignore */ }
+    setPasswordInput("");
+    setLoading(false);
+  };
+  const handleReset = async () => { setPopup(null); setLoading(true); await api.post("/scenario/reset").catch(()=>{}); setLoading(false); setPasswordResult(null); };
   
   // 암구호 설정 (문답식)
   const handleSetPassword = async () => {
@@ -210,6 +239,42 @@ export default function ScenarioPanel() {
             </div>
           </div>
         </div>
+
+        {/* 암구호 문답 현황 (PASSWORD_CHECK 상태일 때 표시) */}
+        {s === "PASSWORD_CHECK" && (
+          <div className="password-exchange-box">
+            <div className="password-exchange-title">🎤 암구호 문답 현황</div>
+            <div className="password-exchange-row">
+              <div className="exchange-item question">
+                <span className="exchange-label">🤖 질문 (로봇)</span>
+                <span className="exchange-value">"{currentChallenge}"</span>
+              </div>
+              <span className="exchange-arrow">→</span>
+              <div className="exchange-item answer">
+                <span className="exchange-label">👤 응답 (접근자)</span>
+                <span className={`exchange-value ${voiceStatus?.recognized_text ? "filled" : "waiting"}`}>
+                  {voiceStatus?.status === "LISTENING" ? (
+                    <span className="listening-indicator">🎤 녹음 중...</span>
+                  ) : voiceStatus?.status === "PROCESSING" ? (
+                    <span className="processing-indicator">🔄 인식 중...</span>
+                  ) : voiceStatus?.recognized_text ? (
+                    `"${voiceStatus.recognized_text}"`
+                  ) : (
+                    <span className="waiting-text">대기 중...</span>
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 암구호 결과 표시 */}
+        {passwordResult && (
+          <div className={`password-result ${passwordResult.correct ? "correct" : "wrong"}`}>
+            <span className="result-icon">{passwordResult.correct ? "✅" : "❌"}</span>
+            <span className="result-text">{passwordResult.message}</span>
+          </div>
+        )}
 
         {/* 암구호 입력 */}
         {s === "PASSWORD_CHECK" && (

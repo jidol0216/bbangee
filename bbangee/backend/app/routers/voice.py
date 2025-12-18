@@ -22,12 +22,16 @@ import json
 import io
 import time
 import threading
+import requests
 from dotenv import load_dotenv
 from typing import Optional
 
 load_dotenv()
 
 router = APIRouter(prefix="/voice", tags=["Voice"])
+
+# 시나리오 API 연동
+SCENARIO_API_URL = "http://localhost:8000/scenario"
 
 # 상태 파일 경로
 STATE_FILE = "/tmp/voice_auth_state.json"
@@ -42,11 +46,11 @@ ELEVENLABS_VOICE_IDS = {
 }
 DEFAULT_VOICE_ID = "cjVigY5qzO86Huf0OWal"  # Eric (남성)
 
-# 현재 인증 상태 (메모리)
+# 현재 인증 상태 (메모리) - 시나리오와 동일한 기본값
 auth_state = {
     "status": "IDLE",  # IDLE, LISTENING, PROCESSING, SUCCESS, FAILED, ERROR
-    "question": "까마귀",
-    "answer": "백두산",
+    "question": "로키",      # 시나리오와 동일
+    "answer": "협동",        # 시나리오와 동일
     "recognized_text": "",
     "last_result": None,
     "enabled": True
@@ -97,12 +101,13 @@ def load_state():
         print(f"상태 로드 실패: {e}")
 
 
-def elevenlabs_speak(text: str, voice_id: str = DEFAULT_VOICE_ID) -> bool:
+def elevenlabs_speak(text: str, voice_id: str = DEFAULT_VOICE_ID, volume_boost_db: float = 10.0) -> bool:
     """
     ElevenLabs TTS로 텍스트 발화 (서버 스피커)
+    volume_boost_db: 볼륨 증폭 (dB). 기본 +10dB
     """
     import sys
-    print(f"[TTS] 시작: '{text}'", flush=True)
+    print(f"[TTS] 시작: '{text}' (볼륨 +{volume_boost_db}dB)", flush=True)
     sys.stdout.flush()
     
     try:
@@ -125,6 +130,11 @@ def elevenlabs_speak(text: str, voice_id: str = DEFAULT_VOICE_ID) -> bool:
         print(f"[TTS] 오디오 바이트: {len(audio_bytes)}", flush=True)
         
         audio_segment = AudioSegment.from_mp3(io.BytesIO(audio_bytes))
+        
+        # 볼륨 증폭 (+dB)
+        audio_segment = audio_segment + volume_boost_db
+        print(f"[TTS] 볼륨 증폭: +{volume_boost_db}dB", flush=True)
+        
         samples = audio_segment.get_array_of_samples()
         
         audio_data = np.array(samples, dtype=np.int16)
@@ -150,17 +160,19 @@ def record_audio(duration: float = 3.5, device_index: int = 10) -> bytes:
     """
     import pyaudio
     
-    CHUNK = 12000
-    RATE = 48000
+    CHUNK = 4096
     CHANNELS = 1
     FORMAT = pyaudio.paInt16
     
     p = pyaudio.PyAudio()
     
     try:
-        # 장치 정보 확인
+        # 장치 정보 확인 및 샘플레이트 자동 설정
         info = p.get_device_info_by_index(device_index)
         channels = min(CHANNELS, int(info['maxInputChannels']))
+        RATE = int(info['defaultSampleRate'])  # 장치의 기본 샘플레이트 사용
+        
+        print(f"🎤 장치 {device_index}: {info['name']}, 샘플레이트: {RATE}")
         
         stream = p.open(
             format=FORMAT,
@@ -182,7 +194,7 @@ def record_audio(duration: float = 3.5, device_index: int = 10) -> bytes:
         stream.stop_stream()
         stream.close()
         
-        return b"".join(frames)
+        return b"".join(frames), RATE  # 오디오 데이터와 샘플레이트 함께 반환
     finally:
         p.terminate()
 
@@ -213,6 +225,24 @@ def check_passphrase(recognized: str, answer: str) -> bool:
     return normalized_answer in normalized_text
 
 
+def submit_to_scenario(password: str) -> dict:
+    """
+    인식된 암구호를 시나리오 시스템에 자동 제출
+    """
+    try:
+        response = requests.post(
+            f"{SCENARIO_API_URL}/password",
+            json={"password": password},
+            timeout=5
+        )
+        result = response.json()
+        print(f"🎯 시나리오 암구호 제출: '{password}' → {result}")
+        return result
+    except Exception as e:
+        print(f"시나리오 암구호 제출 실패: {e}")
+        return {"success": False, "error": str(e)}
+
+
 def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
     """
     암구호 인증 프로세스 실행 (백그라운드)
@@ -231,7 +261,7 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
         
         # 1. TTS: 경고 + 질문
         elevenlabs_speak("정지!", voice_id)
-        time.sleep(0.1)
+        time.sleep(1.0)  # 1초 대기
         elevenlabs_speak(f"암구호! {question}!", voice_id)
         
         # 2. 상태 변경: LISTENING
@@ -240,8 +270,8 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
             auth_state["recognized_text"] = ""
             save_state()
         
-        # 3. 마이크 녹음
-        audio_data = record_audio(duration=timeout_sec)
+        # 3. 마이크 녹음 (5초)
+        audio_data, sample_rate = record_audio(duration=5.0)
         
         # 4. 상태 변경: PROCESSING
         with state_lock:
@@ -249,16 +279,21 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
             save_state()
         
         # 5. STT
-        recognized = speech_to_text(audio_data)
+        recognized = speech_to_text(audio_data, rate=sample_rate)
         print(f"📝 인식된 텍스트: {recognized}")
         
         with state_lock:
             auth_state["recognized_text"] = recognized
         
-        # 6. 암구호 비교
+        # 6. 시나리오 시스템에 자동 제출 (인식된 텍스트가 있으면)
+        if recognized.strip():
+            scenario_result = submit_to_scenario(recognized.strip())
+            print(f"📤 시나리오 제출 결과: {scenario_result}")
+        
+        # 7. 암구호 비교 (로컬 확인용)
         is_match = check_passphrase(recognized, answer)
         
-        # 7. 결과 처리
+        # 8. 결과 처리
         with state_lock:
             if is_match:
                 auth_state["status"] = "SUCCESS"
@@ -268,13 +303,10 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
                 auth_state["last_result"] = False
             save_state()
         
-        # 8. 결과 TTS
-        if is_match:
-            elevenlabs_speak("암구호 일치. 통과하십시오.", voice_id)
-        else:
-            elevenlabs_speak("암구호 불일치. 정지하십시오!", voice_id)
+        # 9. 결과 TTS는 시나리오 시스템에서 처리하므로 생략
+        # (시나리오가 암구호 결과에 따라 TTS를 재생함)
         
-        # 9. 잠시 후 IDLE로 복귀
+        # 10. 잠시 후 IDLE로 복귀
         time.sleep(2)
         with state_lock:
             auth_state["status"] = "IDLE"
@@ -461,3 +493,98 @@ def access_denied():
     text = "출입이 거부되었습니다. 정지하십시오!"
     success = elevenlabs_speak(text)
     return {"success": success}
+
+
+def run_listen_only_process(timeout_sec: float = 3.5):
+    """
+    음성 인식만 수행 (TTS 없이) - 시나리오에서 호출용
+    
+    1. 마이크 녹음
+    2. STT로 텍스트 변환
+    3. 시나리오에 자동 제출
+    """
+    global auth_state
+    
+    try:
+        with state_lock:
+            answer = auth_state["answer"]
+        
+        # 1. 상태 변경: LISTENING
+        with state_lock:
+            auth_state["status"] = "LISTENING"
+            auth_state["recognized_text"] = ""
+            save_state()
+        
+        # 2. 마이크 녹음
+        audio_data, sample_rate = record_audio(duration=timeout_sec)
+        
+        # 3. 상태 변경: PROCESSING
+        with state_lock:
+            auth_state["status"] = "PROCESSING"
+            save_state()
+        
+        # 4. STT
+        recognized = speech_to_text(audio_data, rate=sample_rate)
+        print(f"📝 [자동인식] 인식된 텍스트: {recognized}")
+        
+        with state_lock:
+            auth_state["recognized_text"] = recognized
+        
+        # 5. 시나리오 시스템에 자동 제출 (인식된 텍스트가 있으면)
+        if recognized.strip():
+            scenario_result = submit_to_scenario(recognized.strip())
+            print(f"📤 [자동인식] 시나리오 제출 결과: {scenario_result}")
+        else:
+            print("📤 [자동인식] 인식된 텍스트 없음 - 제출 스킵")
+        
+        # 6. 암구호 비교 (로컬 확인용)
+        is_match = check_passphrase(recognized, answer) if recognized else False
+        
+        # 7. 결과 처리
+        with state_lock:
+            if is_match:
+                auth_state["status"] = "SUCCESS"
+                auth_state["last_result"] = True
+            else:
+                auth_state["status"] = "FAILED"
+                auth_state["last_result"] = False
+            save_state()
+        
+        # 8. 잠시 후 IDLE로 복귀
+        time.sleep(2)
+        with state_lock:
+            auth_state["status"] = "IDLE"
+            save_state()
+            
+        return recognized
+            
+    except Exception as e:
+        print(f"[자동인식] 오류: {e}")
+        with state_lock:
+            auth_state["status"] = "ERROR"
+            auth_state["recognized_text"] = str(e)
+            save_state()
+        
+        time.sleep(3)
+        with state_lock:
+            auth_state["status"] = "IDLE"
+            save_state()
+        
+        return ""
+
+
+@router.post("/listen-only")
+async def listen_only(background_tasks: BackgroundTasks, timeout_sec: float = 3.5):
+    """
+    TTS 없이 음성 인식만 시작 (시나리오에서 호출용)
+    """
+    with state_lock:
+        if auth_state["status"] != "IDLE":
+            return {"success": False, "error": "이미 인식 진행 중"}
+        auth_state["status"] = "PROCESSING"
+        save_state()
+    
+    # 백그라운드에서 음성 인식 실행
+    background_tasks.add_task(run_listen_only_process, timeout_sec)
+    
+    return {"success": True, "message": "음성 인식 시작됨"}

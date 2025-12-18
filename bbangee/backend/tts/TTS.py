@@ -63,7 +63,7 @@ class TTS:
             raise
 
     def _speak_gtts(self, text: str) -> bool:
-        """Google TTS (무료)"""
+        """Google TTS (무료) - 음량 증폭 적용"""
         try:
             from gtts import gTTS
             import pygame
@@ -75,12 +75,22 @@ class TTS:
             # TTS 생성
             tts = gTTS(text=text, lang='ko')
             
-            # 임시 파일에 저장 후 재생
+            # 임시 파일에 저장
             with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as f:
                 tts.save(f.name)
                 temp_path = f.name
             
+            # 음량 증폭 (pydub 사용)
+            try:
+                from pydub import AudioSegment
+                audio = AudioSegment.from_mp3(temp_path)
+                audio = audio + 6  # +6dB 증폭 (약 2배)
+                audio.export(temp_path, format="mp3")
+            except:
+                pass  # pydub 없으면 원본 사용
+            
             pygame.mixer.music.load(temp_path)
+            pygame.mixer.music.set_volume(1.0)  # 최대 볼륨
             pygame.mixer.music.play()
             
             # 재생 완료 대기

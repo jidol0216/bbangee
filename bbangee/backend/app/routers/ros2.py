@@ -141,6 +141,7 @@ def send_robot_command(cmd: RobotCommand):
         'ready',         # 시작 위치로 이동
         'mode1',         # 직접 제어 모드
         'mode2',         # 최적 제어 모드
+        'j6_rotate',     # J6 180도 회전 (카메라 방향 전환)
         'tracking_on', 
         'tracking_off'
     ]
