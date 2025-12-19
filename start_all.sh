@@ -181,14 +181,14 @@ echo "  → Collision Recovery PID: ${PIDS[-1]}"
 sleep 1
 
 # ==========================================
-# 6. Voice Auth 노드
+# 6. Voice Auth 노드 (비활성화 - 웹 백엔드에서 ElevenLabs로 처리)
 # ==========================================
-echo -e "${CYAN}[6/8] Voice Auth 노드 시작...${NC}"
+echo -e "${CYAN}[6/8] Voice Auth 노드 (비활성화됨 - 웹 백엔드 사용)${NC}"
 
-ros2 run voice_auth voice_auth_node > /tmp/ros2_voice.log 2>&1 &
-PIDS+=($!)
-NAMES+=("Voice Auth")
-echo "  → Voice Auth PID: ${PIDS[-1]}"
+# ros2 run voice_auth voice_auth_node > /tmp/ros2_voice.log 2>&1 &
+# PIDS+=($!)
+# NAMES+=("Voice Auth")
+# echo "  → Voice Auth PID: ${PIDS[-1]}"
 sleep 1
 
 # ==========================================

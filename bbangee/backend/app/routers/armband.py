@@ -54,6 +54,7 @@ armband_state = {
     "ocr_result": None,             # OCR 결과
     "running": False,
     "last_update": 0,
+    "ocr_enabled": False,           # OCR 활성화 여부 (시나리오에서 제어)
 }
 state_lock = threading.Lock()
 
@@ -372,8 +373,9 @@ class ArmbandDetectorNode(Node):
                     "faction": ocr_result["faction"],
                 }
                 
-                # 시나리오에 OCR 결과 전송 (자동 피아식별)
-                send_ocr_to_scenario(True, ocr_result["faction"], ocr_result["confidence"])
+                # 시나리오에 OCR 결과 전송 (자동 피아식별) - OCR 활성화 시에만
+                if armband_state.get("ocr_enabled", False):
+                    send_ocr_to_scenario(True, ocr_result["faction"], ocr_result["confidence"])
             else:
                 # 감지 없음
                 cv2.putText(raw_result, "No Armband Detected", (10, 30),
@@ -382,8 +384,9 @@ class ArmbandDetectorNode(Node):
                 roi_result = None
                 ocr_result = None
                 
-                # 시나리오에 감지 없음 전송
-                send_ocr_to_scenario(False, "UNKNOWN", 0)
+                # 시나리오에 감지 없음 전송 - OCR 활성화 시에만
+                if armband_state.get("ocr_enabled", False):
+                    send_ocr_to_scenario(False, "UNKNOWN", 0)
             
             # 상태 업데이트
             with state_lock:
@@ -447,21 +450,49 @@ def get_armband_status():
             "running": armband_state["running"],
             "last_update": armband_state["last_update"],
             "detection": info if info else {"detected": False},
-            "ocr": ocr if ocr else {"text": "", "confidence": 0, "faction": "UNKNOWN"}
+            "ocr": ocr if ocr else {"text": "", "confidence": 0, "faction": "UNKNOWN"},
+            "ocr_enabled": armband_state.get("ocr_enabled", False)
         }
+
+
+@router.post("/ocr/enable")
+def enable_ocr():
+    """OCR 활성화 (식별 시퀀스 시작 시 호출)"""
+    with state_lock:
+        armband_state["ocr_enabled"] = True
+    print("🎯 OCR 활성화됨")
+    return {"success": True, "ocr_enabled": True}
+
+
+@router.post("/ocr/disable")
+def disable_ocr():
+    """OCR 비활성화 (시나리오 리셋 시 호출)"""
+    with state_lock:
+        armband_state["ocr_enabled"] = False
+        armband_state["latest_raw_result"] = None
+        armband_state["latest_roi_result"] = None
+        armband_state["detection_info"] = None
+        armband_state["ocr_result"] = None
+    print("🎯 OCR 비활성화됨")
+    return {"success": True, "ocr_enabled": False}
 
 
 @router.get("/raw/frame")
 def get_raw_frame():
     """Raw 이미지 (OBB 박스 표시) - 단일 프레임"""
     with state_lock:
-        frame = armband_state.get("latest_raw_result")
+        ocr_enabled = armband_state.get("ocr_enabled", False)
+        frame = armband_state.get("latest_raw_result") if ocr_enabled else None
         
     if frame is None:
-        # 플레이스홀더 이미지
+        # OCR 비활성화 또는 프레임 없음 → 검은 화면
         placeholder = np.zeros((480, 640, 3), dtype=np.uint8)
-        cv2.putText(placeholder, "Waiting for camera...", (150, 240),
-                   cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 100, 100), 2)
+        if not ocr_enabled:
+            cv2.putText(placeholder, "Standby...", (250, 240),
+                       cv2.FONT_HERSHEY_SIMPLEX, 1, (80, 80, 80), 2)
+        else:
+            cv2.putText(placeholder, "Waiting for camera...", (150, 240),
+                       cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 100, 100), 2)
         frame = placeholder
     
     _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
@@ -472,14 +503,25 @@ def get_raw_frame():
 def get_raw_stream():
     """Raw 이미지 MJPEG 스트림"""
     def generate():
+        # OCR 비활성화 시 검은 화면
+        black_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+        cv2.putText(black_frame, "Standby...", (250, 240),
+                   cv2.FONT_HERSHEY_SIMPLEX, 1, (80, 80, 80), 2)
+        _, black_jpeg = cv2.imencode('.jpg', black_frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
+        
         while True:
             with state_lock:
-                frame = armband_state.get("latest_raw_result")
+                ocr_enabled = armband_state.get("ocr_enabled", False)
+                frame = armband_state.get("latest_raw_result") if ocr_enabled else None
             
             if frame is not None:
                 _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+            else:
+                # OCR 비활성화 → 검은 화면
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + black_jpeg.tobytes() + b'\r\n')
             
             time.sleep(0.05)  # ~20fps
     
@@ -490,14 +532,19 @@ def get_raw_stream():
 def get_roi_frame():
     """ROI 이미지 - 단일 프레임 (회전+crop)"""
     with state_lock:
-        frame = armband_state.get("latest_roi_result")
+        ocr_enabled = armband_state.get("ocr_enabled", False)
+        frame = armband_state.get("latest_roi_result") if ocr_enabled else None
         info = armband_state.get("detection_info")
     
     if frame is None or (info and not info.get("detected", False)):
-        # 플레이스홀더
+        # OCR 비활성화 또는 미감지 → 검은 화면
         placeholder = np.zeros((WARPED_SIZE[1], WARPED_SIZE[0], 3), dtype=np.uint8)
-        cv2.putText(placeholder, "No ROI", (50, 45),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (100, 100, 100), 2)
+        if not ocr_enabled:
+            cv2.putText(placeholder, "Standby", (55, 45),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (80, 80, 80), 2)
+        else:
+            cv2.putText(placeholder, "No ROI", (50, 45),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (100, 100, 100), 2)
         frame = placeholder
     
     _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
@@ -508,17 +555,28 @@ def get_roi_frame():
 def get_roi_stream():
     """ROI MJPEG 스트림 (회전+crop)"""
     def generate():
+        # OCR 비활성화 시 검은 화면
+        black_frame = np.zeros((WARPED_SIZE[1], WARPED_SIZE[0], 3), dtype=np.uint8)
+        cv2.putText(black_frame, "Standby", (55, 45),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (80, 80, 80), 2)
+        _, black_jpeg = cv2.imencode('.jpg', black_frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+        
         while True:
             with state_lock:
-                frame = armband_state.get("latest_roi_result")
+                ocr_enabled = armband_state.get("ocr_enabled", False)
+                frame = armband_state.get("latest_roi_result") if ocr_enabled else None
                 info = armband_state.get("detection_info")
             
             if frame is not None and info and info.get("detected", False):
                 _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+            elif not ocr_enabled:
+                # OCR 비활성화 → 검은 화면
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + black_jpeg.tobytes() + b'\r\n')
             else:
-                # 플레이스홀더
+                # OCR 활성화, ROI 없음
                 placeholder = np.zeros((WARPED_SIZE[1], WARPED_SIZE[0], 3), dtype=np.uint8)
                 cv2.putText(placeholder, "No ROI", (50, 45),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (100, 100, 100), 2)

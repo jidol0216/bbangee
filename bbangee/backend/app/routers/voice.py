@@ -57,6 +57,9 @@ auth_state = {
 }
 state_lock = threading.Lock()
 
+# TTS 동시 실행 방지 락
+tts_lock = threading.Lock()
+
 
 # ==================== Models ====================
 
@@ -105,53 +108,58 @@ def elevenlabs_speak(text: str, voice_id: str = DEFAULT_VOICE_ID, volume_boost_d
     """
     ElevenLabs TTS로 텍스트 발화 (서버 스피커)
     volume_boost_db: 볼륨 증폭 (dB). 기본 +10dB
+    
+    ⚠️ tts_lock으로 동시 실행 방지 - 한 번에 하나의 TTS만 재생
     """
     import sys
-    print(f"[TTS] 시작: '{text}' (볼륨 +{volume_boost_db}dB)", flush=True)
-    sys.stdout.flush()
     
-    try:
-        from elevenlabs import ElevenLabs
-        import sounddevice as sd
-        from pydub import AudioSegment
-        import numpy as np
+    # 락 획득 대기 (다른 TTS가 끝날 때까지)
+    with tts_lock:
+        print(f"[TTS] 시작: '{text}' (볼륨 +{volume_boost_db}dB)", flush=True)
+        sys.stdout.flush()
         
-        client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
-        print("[TTS] ElevenLabs 클라이언트 생성됨", flush=True)
-        
-        audio = client.text_to_speech.convert(
-            voice_id=voice_id,
-            model_id="eleven_multilingual_v2",
-            text=text
-        )
-        print("[TTS] 오디오 생성됨", flush=True)
-        
-        audio_bytes = b"".join(audio)
-        print(f"[TTS] 오디오 바이트: {len(audio_bytes)}", flush=True)
-        
-        audio_segment = AudioSegment.from_mp3(io.BytesIO(audio_bytes))
-        
-        # 볼륨 증폭 (+dB)
-        audio_segment = audio_segment + volume_boost_db
-        print(f"[TTS] 볼륨 증폭: +{volume_boost_db}dB", flush=True)
-        
-        samples = audio_segment.get_array_of_samples()
-        
-        audio_data = np.array(samples, dtype=np.int16)
-        if audio_segment.channels == 2:
-            audio_data = audio_data.reshape((-1, 2))
-        
-        print("[TTS] 재생 시작", flush=True)
-        sd.play(audio_data, samplerate=audio_segment.frame_rate)
-        sd.wait()
-        print("[TTS] 재생 완료", flush=True)
-        
-        return True
-    except Exception as e:
-        import traceback
-        print(f"[TTS] 에러: {e}", flush=True)
-        traceback.print_exc()
-        return False
+        try:
+            from elevenlabs import ElevenLabs
+            import sounddevice as sd
+            from pydub import AudioSegment
+            import numpy as np
+            
+            client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+            print("[TTS] ElevenLabs 클라이언트 생성됨", flush=True)
+            
+            audio = client.text_to_speech.convert(
+                voice_id=voice_id,
+                model_id="eleven_multilingual_v2",
+                text=text
+            )
+            print("[TTS] 오디오 생성됨", flush=True)
+            
+            audio_bytes = b"".join(audio)
+            print(f"[TTS] 오디오 바이트: {len(audio_bytes)}", flush=True)
+            
+            audio_segment = AudioSegment.from_mp3(io.BytesIO(audio_bytes))
+            
+            # 볼륨 증폭 (+dB)
+            audio_segment = audio_segment + volume_boost_db
+            print(f"[TTS] 볼륨 증폭: +{volume_boost_db}dB", flush=True)
+            
+            samples = audio_segment.get_array_of_samples()
+            
+            audio_data = np.array(samples, dtype=np.int16)
+            if audio_segment.channels == 2:
+                audio_data = audio_data.reshape((-1, 2))
+            
+            print("[TTS] 재생 시작", flush=True)
+            sd.play(audio_data, samplerate=audio_segment.frame_rate)
+            sd.wait()
+            print("[TTS] 재생 완료", flush=True)
+            
+            return True
+        except Exception as e:
+            import traceback
+            print(f"[TTS] 에러: {e}", flush=True)
+            traceback.print_exc()
+            return False
 
 
 def record_audio(duration: float = 3.5, device_index: int = 10) -> bytes:
@@ -247,7 +255,7 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
     """
     암구호 인증 프로세스 실행 (백그라운드)
     
-    1. TTS로 경고 + 질문 출력
+    1. TTS로 질문 출력 (정지!는 시나리오에서 이미 말함)
     2. 마이크 녹음
     3. STT로 텍스트 변환
     4. 암구호 비교 및 결과 TTS
@@ -259,9 +267,7 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
             question = auth_state["question"]
             answer = auth_state["answer"]
         
-        # 1. TTS: 경고 + 질문
-        elevenlabs_speak("정지!", voice_id)
-        time.sleep(1.0)  # 1초 대기
+        # 1. TTS: 질문만 (정지!는 시나리오에서 이미 말함)
         elevenlabs_speak(f"암구호! {question}!", voice_id)
         
         # 2. 상태 변경: LISTENING

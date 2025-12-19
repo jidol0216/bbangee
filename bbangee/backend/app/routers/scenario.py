@@ -176,6 +176,9 @@ class ScenarioManager:
         self.person_type = PersonType.UNKNOWN
         self._add_history("접근자 감지됨")
         
+        # OCR 비활성화 (검은 화면 유지)
+        await self._set_ocr_enabled(False)
+        
         # TTS 1: 정지 명령
         await self._play_tts("정지! 신원을 확인합니다.")
         
@@ -184,6 +187,9 @@ class ScenarioManager:
         
         # TTS 2: 식별 시퀀스 안내 (2초)
         await self._play_tts("접근자 얼굴 감지. 식별 시퀀스 진행.")
+        
+        # OCR 활성화 (이제 RAW/ROI 화면 표시됨)
+        await self._set_ocr_enabled(True)
         
         # 브로드캐스트
         await self.broadcast({
@@ -497,6 +503,9 @@ class ScenarioManager:
         
         self._add_history("시나리오 리셋")
         
+        # OCR 비활성화 (검은 화면으로)
+        await self._set_ocr_enabled(False)
+        
         # 추적 속도 초기화
         await self._send_tracking_speed_reset()
         
@@ -512,6 +521,20 @@ class ScenarioManager:
         
         return {"success": True, "state": self.state.value}
     
+    async def _set_ocr_enabled(self, enabled: bool):
+        """OCR 활성화/비활성화 (armband 화면 제어)"""
+        import requests
+        try:
+            endpoint = "enable" if enabled else "disable"
+            response = requests.post(
+                f"http://localhost:8000/armband/ocr/{endpoint}",
+                timeout=1
+            )
+            result = response.json()
+            print(f"🎯 OCR {'활성화' if enabled else '비활성화'}: {result}")
+        except Exception as e:
+            print(f"OCR 상태 변경 실패: {e}")
+
     async def _control_device(self, device: str, on: bool):
         """ESP32 디바이스 제어 (서보, 레이저)"""
         import requests
