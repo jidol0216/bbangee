@@ -5,7 +5,7 @@ import requests
 
 router = APIRouter(prefix="/device", tags=["Device"])
 
-ESP32_BASE = "http://192.168.10.50"
+ESP32_BASE = "http://192.168.10.46"
 
 class ServoCommand(BaseModel):
     target: bool

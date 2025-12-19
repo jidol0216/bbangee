@@ -26,7 +26,7 @@ class HeadLaserTest(Node):
         
         # ESP32 API 설정
         self.api_url = "http://localhost:8000/device/laser"
-        self.esp32_direct_url = "http://192.168.10.50/device/laser"
+        self.esp32_direct_url = "http://192.168.10.46/device/laser"
         self.use_backend = True  # True: 백엔드 API, False: ESP32 직접
         
         # 상태 관리

@@ -13,7 +13,7 @@ AUTO_MODE_FILE = '/tmp/ros2_auto_mode.json'
 STATE_FILE = '/tmp/ros2_bridge_state.json'
 
 # 🔵 ESP32 IP 주소 (시리얼에서 확인한 값)
-ESP32_IP = "192.168.10.50"
+ESP32_IP = "192.168.10.46"
 ESP32_BASE = f"http://{ESP32_IP}"
 
 # ESP32 연결 상태 추적
