@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 1-5: Tech Stack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .slide { width: 1280px; height: 720px; background-color: #0f172a; }
+    </style>
+</head>
+<body class="bg-gray-200 flex items-center justify-center h-screen">
+    <div class="slide shadow-2xl rounded-lg flex flex-col p-16">
+        <h2 class="text-5xl font-bold text-slate-100 pb-6 border-b-4 border-sky-500">
+            1.5 공통 기술 스택
+        </h2>
+        <div class="flex-1 grid grid-cols-2 gap-8 mt-8 text-slate-300">
+            <!-- 기술 스택 -->
+            <div>
+                <h3 class="text-3xl font-bold mb-4">프레임워크 & 하드웨어</h3>
+                <div class="bg-slate-800/50 p-6 rounded-lg space-y-6">
+                    <div>
+                        <h4 class="text-xl font-bold text-sky-400 mb-2 flex items-center"><i class="fa-solid fa-cogs mr-3"></i>Framework</h4>
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">ROS2 Humble</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">Python 3.10</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">OpenCV 4.x</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">TensorRT</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-sky-400 mb-2 flex items-center"><i class="fa-solid fa-microchip mr-3"></i>Hardware</h4>
+                        <div class="flex flex-wrap gap-2 text-sm">
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">Doosan M0609</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">Intel RealSense D435i</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">OnRobot RG2</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">NVIDIA RTX 4060</span>
+                            <span class="bg-slate-700 px-3 py-1 rounded-full">Arduino</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 통신 구조 -->
+            <div>
+                <h3 class="text-3xl font-bold mb-4">ROS2 통신 구조</h3>
+                <div class="bg-slate-800/50 p-6 rounded-lg h-full flex flex-col justify-center space-y-4">
+                    <div>
+                        <p class="text-lg font-bold text-sky-400">Topic (비동기 데이터 스트림)</p>
+                        <div class="flex items-center justify-between bg-black/30 p-3 rounded mt-2 text-sm">
+                            <span>[Camera]</span><i class="fa-solid fa-arrow-right-long"></i>
+                            <span>[YOLO]</span><i class="fa-solid fa-arrow-right-long"></i>
+                            <span>[EKF]</span><i class="fa-solid fa-arrow-right-long"></i>
+                            <span>[Robot]</span>
+                        </div>
+                        <p class="text-xs text-slate-400 text-center mt-1">/image → /faces → /marker_filtered → /joint_states</p>
+                    </div>
+                    <div>
+                        <p class="text-lg font-bold text-purple-400">Service (동기 요청/응답)</p>
+                        <div class="flex items-center justify-center bg-black/30 p-3 rounded mt-2 text-sm">
+                            <span>[Main FSM]</span>
+                            <span class="mx-4 text-center"><i class="fa-solid fa-right-left"></i><br>/stt</span>
+                            <span>[Voice]</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-lg font-bold text-yellow-400">Action (비동기 목표/피드백)</p>
+                        <div class="flex items-center justify-center bg-black/30 p-3 rounded mt-2 text-sm">
+                            <span>[Main FSM]</span>
+                            <span class="mx-4 text-center"><i class="fa-solid fa-arrows-spin"></i><br>/alert</span>
+                            <span>[Web]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

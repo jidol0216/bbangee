@@ -1,0 +1,18 @@
+# RequestAuth.srv
+# 암구호 인증 요청 서비스
+
+# Request
+# 타임아웃 (초) - 0이면 기본값 사용
+float32 timeout_sec
+
+---
+
+# Response
+# 인증 성공 여부
+bool success
+
+# 인식된 텍스트
+string recognized_text
+
+# 추가 메시지 (오류 등)
+string message

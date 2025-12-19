@@ -1,0 +1,19 @@
+# Face Detection Node Configuration
+face_detection_node:
+  ros__parameters:
+    # Model
+    model_path: ''  # 빈 문자열이면 기본 경로 사용
+    confidence_threshold: 0.4
+    
+    # GPU Optimization
+    use_gpu: true
+    use_tensorrt: true
+    use_fp16: true
+    input_size: 1280
+    
+    # Preprocessing
+    use_preprocessing: true
+    use_roi_tracking: true
+    
+    # Display
+    show_window: false

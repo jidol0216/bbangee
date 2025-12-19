@@ -1,0 +1,56 @@
+# Camera-Robot Calibration (Hand-Eye Calibration)
+# 두산 M0609 + RealSense D435i 아이-핸드 캘리브레이션 결과
+# 실제 캘리브레이션 수행 후 이 값을 업데이트하세요
+
+# 카메라 프레임 -> 그리퍼(tool0) 프레임 변환
+# Eye-in-Hand 설정 시 사용
+
+camera_to_gripper:
+  # Translation (meters)
+  translation:
+    x: 0.0
+    y: 0.0
+    z: 0.05  # 카메라가 그리퍼 위 5cm
+  
+  # Rotation (quaternion: x, y, z, w)
+  rotation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+
+# 카메라 프레임 -> 로봇 베이스 프레임 변환
+# Eye-to-Hand (고정 카메라) 설정 시 사용
+
+camera_to_base:
+  # Translation (meters)
+  translation:
+    x: 0.5
+    y: 0.0
+    z: 0.8
+  
+  # Rotation (quaternion: x, y, z, w)
+  # 카메라가 아래를 향하는 경우
+  rotation:
+    x: 0.0
+    y: 0.7071
+    z: 0.0
+    w: 0.7071
+
+# RealSense D435i 내부 파라미터 (기본값)
+# 실제 값은 CameraInfo 토픽에서 자동으로 가져옴
+
+camera_intrinsics:
+  width: 640
+  height: 480
+  fx: 615.0
+  fy: 615.0
+  cx: 320.0
+  cy: 240.0
+
+# 그리퍼 오프셋 (RG2 그리퍼 끝단)
+gripper_offset:
+  # 그리퍼 중심에서 끝단까지 거리 (meters)
+  finger_length: 0.05
+  # 그리퍼 폭 (meters)
+  finger_width: 0.02

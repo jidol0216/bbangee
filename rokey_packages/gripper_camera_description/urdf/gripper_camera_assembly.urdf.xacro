@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+  Gripper + Camera Assembly URDF
+  - OnRobot RG2 Gripper (using inria-paris-robotics-lab/onrobot_ros)
+  - Intel RealSense D435i Camera
+  
+  Mounts to Doosan m0609 robot link_6
+  
+  Hand-Eye Calibration Applied:
+  - Translation: x=0.034320, y=0.062701, z=0.198739
+  - Quaternion: x=0.508241, y=0.499358, z=0.498430, w=-0.493863
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="gripper_camera_assembly">
+
+  <!-- Include RG2 Gripper from onrobot_ros (inria-paris-robotics-lab) -->
+  <xacro:include filename="$(find onrobot_description)/urdf/onrobot_rg.urdf.xacro"/>
+
+  <!-- Include RealSense D435i -->
+  <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
+
+  <!-- Gripper + Camera Assembly Macro -->
+  <xacro:macro name="gripper_camera_assembly" params="parent prefix:='' use_nominal_extrinsics:=true">
+
+    <!-- Mount RG2 Gripper to parent (link_6) -->
+    <!-- Using onrobot_rg macro from inria-paris-robotics-lab/onrobot_ros -->
+    <xacro:onrobot_rg parent="${parent}" prefix="${prefix}" model="rg2_v1">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:onrobot_rg>
+
+    <!-- Mount D435i Camera -->
+    <!-- Position based on Hand-Eye Calibration -->
+    <!-- Camera is mounted on link_6 with calibrated transform -->
+    <!-- 2025-12-17: 카메라 180도 회전 장착 반영 (그리퍼 시야 확보용) -->
+    <xacro:sensor_d435i parent="${parent}" name="${prefix}camera" use_nominal_extrinsics="${use_nominal_extrinsics}">
+      <!-- 
+        RealSense Camera Position:
+        - 2025-12-18: 카메라 연장대 실측 125mm (Y 방향)
+        - 카메라 180° 회전 장착 → flipped 이미지 사용
+        RPY: -90°, -90°, 0° (optical frame 기준)
+      -->
+      <origin xyz="0.0 0.125 0.0" rpy="-1.5708 -1.5708 0.0"/>
+    </xacro:sensor_d435i>
+
+  </xacro:macro>
+
+</robot>

@@ -1,0 +1,20 @@
+# Voice Auth Node Configuration (질문-대답 암구호 체계)
+voice_auth_node:
+  ros__parameters:
+    # 질문 암구호 (초병이 말함) - 웹에서 동적 변경 가능
+    question_passphrase: "까마귀"
+    
+    # 정답 암구호 (접근자가 대답해야 함) - 웹에서 동적 변경 가능
+    answer_passphrase: "백두산"
+    
+    # 녹음 타임아웃 (초)
+    default_timeout_sec: 3.5
+    
+    # TTS 경고 메시지
+    warning_message: "정지! 손들어!"
+    
+    # TTS 활성화 여부
+    enable_tts: true
+    
+    # 마이크 장치 인덱스 (10 = C270 HD WEBCAM)
+    mic_device_index: 10

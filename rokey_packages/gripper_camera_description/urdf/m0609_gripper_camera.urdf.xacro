@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+  Complete Robot Description:
+  Doosan m0609 + OnRobot RG2 Gripper + Intel RealSense D435i Camera
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="m0609_with_gripper_camera">
+
+  <!-- Include Doosan m0609 -->
+  <xacro:include filename="$(find dsr_description2)/urdf/m0609.urdf"/>
+
+  <!-- Include Gripper + Camera Assembly -->
+  <xacro:include filename="$(find gripper_camera_description)/urdf/gripper_camera_assembly.urdf.xacro"/>
+
+  <!-- Mount Gripper + Camera to link_6 -->
+  <xacro:gripper_camera_assembly parent="link_6" prefix="" use_nominal_extrinsics="true"/>
+
+</robot>

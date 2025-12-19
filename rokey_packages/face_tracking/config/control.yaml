@@ -1,0 +1,28 @@
+# Joint Tracking Node Configuration
+joint_tracking_node:
+  ros__parameters:
+    # Robot
+    robot_id: 'dsr01'
+    robot_model: 'm0609'
+    
+    # Velocity limits (deg/s) - smooth tracking
+    j1_vel_limit: 30.0
+    j2_vel_limit: 20.0
+    j3_vel_limit: 25.0
+    j4_vel_limit: 40.0
+    j5_vel_limit: 40.0
+    j6_vel_limit: 30.0
+    
+    # Control gains (0~1)
+    j1_gain: 0.5
+    j2_gain: 0.3
+    j3_gain: 0.3
+    j4_gain: 0.4
+    j5_gain: 0.3
+    j6_gain: 0.2
+    
+    # Dead zone (deg)
+    dead_zone_deg: 2.0
+    
+    # TCP offset (mm)
+    tcp_offset_z: 228.6

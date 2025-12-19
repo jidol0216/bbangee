@@ -1,0 +1,9 @@
+# Face Tracking Node Configuration
+face_tracking_node:
+  ros__parameters:
+    # Target offset (mm)
+    target_offset_mm: 650.0
+    
+    # Frame IDs
+    camera_frame: 'camera_color_optical_frame'
+    robot_frame: 'base_link'

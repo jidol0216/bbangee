@@ -1,0 +1,252 @@
+<?xml version="1.0"?>
+<!--
+  OnRobot RG2 Gripper URDF (Simplified for ROS2)
+  Based on: https://github.com/ikalevatykh/onrobot_ros
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="onrobot_rg2">
+
+  <!-- Materials -->
+  <material name="rg2/grey">
+    <color rgba="0.5 0.5 0.5 1.0"/>
+  </material>
+  <material name="rg2/light_grey">
+    <color rgba="0.8 0.8 0.8 1.0"/>
+  </material>
+  <material name="rg2/black">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+  </material>
+
+  <!-- RG2 Gripper Macro -->
+  <xacro:macro name="onrobot_rg2" params="parent prefix:=gripper *origin">
+
+    <!-- Bracket (connects to robot flange) -->
+    <link name="${prefix}_bracket">
+      <visual>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/visual/single_bracket.stl"/>
+        </geometry>
+        <material name="rg2/grey"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/collision/single_bracket.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.09"/>
+        <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_bracket_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}_bracket"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <!-- Body -->
+    <link name="${prefix}_body">
+      <visual>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/visual/body.stl"/>
+        </geometry>
+        <material name="rg2/light_grey"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/collision/body.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.65"/>
+        <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_body_joint" type="fixed">
+      <parent link="${prefix}_bracket"/>
+      <child link="${prefix}_body"/>
+      <origin xyz="0.0 0.0 0.05" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Left Finger Assembly -->
+    <!-- Moment Arm Left -->
+    <link name="${prefix}_moment_arm_left">
+      <visual>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/visual/moment_arm.stl"/>
+        </geometry>
+        <material name="rg2/grey"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/collision/moment_arm.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_finger_left_joint" type="fixed">
+      <parent link="${prefix}_body"/>
+      <child link="${prefix}_moment_arm_left"/>
+      <origin xyz="-0.017 0.0 0.055" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="0.0" upper="1.3" effort="2.2" velocity="0.5"/>
+    </joint>
+
+    <!-- Truss Arm Left -->
+    <link name="${prefix}_truss_arm_left">
+      <visual>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/visual/truss_arm.stl"/>
+        </geometry>
+        <material name="rg2/grey"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/collision/truss_arm.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_truss_left_joint" type="fixed">
+      <parent link="${prefix}_moment_arm_left"/>
+      <child link="${prefix}_truss_arm_left"/>
+      <origin xyz="-0.0075 0.0 0.0715" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="-1.3" upper="0.0" effort="2.2" velocity="0.5"/>
+      <mimic joint="${prefix}_finger_left_joint" multiplier="-1.0"/>
+    </joint>
+
+    <!-- Finger Tip Left -->
+    <link name="${prefix}_finger_tip_left">
+      <visual>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/visual/finger_tip.stl"/>
+        </geometry>
+        <material name="rg2/black"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/collision/finger_tip.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_tip_left_joint" type="fixed">
+      <parent link="${prefix}_truss_arm_left"/>
+      <child link="${prefix}_finger_tip_left"/>
+      <origin xyz="-0.0256 0.0 0.04868" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Right Finger Assembly (mirrored) -->
+    <!-- Moment Arm Right -->
+    <link name="${prefix}_moment_arm_right">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/visual/moment_arm.stl"/>
+        </geometry>
+        <material name="rg2/grey"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/collision/moment_arm.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_finger_right_joint" type="fixed">
+      <parent link="${prefix}_body"/>
+      <child link="${prefix}_moment_arm_right"/>
+      <origin xyz="0.017 0.0 0.055" rpy="0 0 0"/>
+      <axis xyz="0 -1 0"/>
+      <limit lower="0.0" upper="1.3" effort="2.2" velocity="0.5"/>
+      <mimic joint="${prefix}_finger_left_joint" multiplier="1.0"/>
+    </joint>
+
+    <!-- Truss Arm Right -->
+    <link name="${prefix}_truss_arm_right">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/visual/truss_arm.stl"/>
+        </geometry>
+        <material name="rg2/grey"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/collision/truss_arm.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_truss_right_joint" type="fixed">
+      <parent link="${prefix}_moment_arm_right"/>
+      <child link="${prefix}_truss_arm_right"/>
+      <origin xyz="0.0075 0.0 0.0715" rpy="0 0 0"/>
+      <axis xyz="0 -1 0"/>
+      <limit lower="-1.3" upper="0.0" effort="2.2" velocity="0.5"/>
+      <mimic joint="${prefix}_finger_left_joint" multiplier="-1.0"/>
+    </joint>
+
+    <!-- Finger Tip Right -->
+    <link name="${prefix}_finger_tip_right">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/visual/finger_tip.stl"/>
+        </geometry>
+        <material name="rg2/black"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+          <mesh filename="package://dsr_description2/meshes/collision/finger_tip.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+    </link>
+
+    <joint name="${prefix}_tip_right_joint" type="fixed">
+      <parent link="${prefix}_truss_arm_right"/>
+      <child link="${prefix}_finger_tip_right"/>
+      <origin xyz="0.0256 0.0 0.04868" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Grasp Frame (TCP) -->
+    <link name="${prefix}_grasp_frame"/>
+
+    <joint name="${prefix}_grasp_joint" type="fixed">
+      <parent link="${prefix}_body"/>
+      <child link="${prefix}_grasp_frame"/>
+      <origin xyz="0.0 0.0 0.14" rpy="0 0 0"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>

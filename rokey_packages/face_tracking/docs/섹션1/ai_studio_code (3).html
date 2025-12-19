@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 1-4: Team & Roles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .slide { width: 1280px; height: 720px; background-color: #0f172a; }
+        th, td { padding: 8px; text-align: left; border: 1px solid #334155; }
+        th { background-color: #1e293b; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-gray-200 flex items-center justify-center h-screen">
+    <div class="slide shadow-2xl rounded-lg flex flex-col p-16">
+        <h2 class="text-5xl font-bold text-slate-100 pb-6 border-b-4 border-sky-500">
+            1.4 팀 구성 & 역할 분담
+        </h2>
+        <div class="flex-1 grid grid-cols-2 gap-8 mt-8 text-slate-300">
+            <div>
+                <h3 class="text-3xl font-bold mb-4">역할 분담표</h3>
+                <table class="w-full text-base">
+                    <thead>
+                        <tr><th>담당</th><th>역할</th><th>주요 기술</th><th>섹션</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>성우</strong></td><td>SAM3 권총 파지</td><td>SAM3, Gripper Control</td><td>섹션 4</td></tr>
+                        <tr><td><strong>태연</strong></td><td>헤드샷 트래킹</td><td>YOLOv8, EKF, Joint Control</td><td>섹션 5</td></tr>
+                        <tr><td><strong>경훈</strong></td><td>피아 식별</td><td>Image Classification</td><td>섹션 6</td></tr>
+                        <tr><td><strong>지원</strong></td><td>음성 암구호</td><td>Whisper STT, gTTS</td><td>섹션 7</td></tr>
+                        <tr><td><strong>TBD</strong></td><td>웹 UI (BBANGEE)</td><td>FastAPI, React, SQLite</td><td>섹션 8</td></tr>
+                        <tr><td><strong>TBD</strong></td><td>아두이노</td><td>Arduino, Serial</td><td>섹션 9</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <h3 class="text-3xl font-bold mb-4">협업 구조</h3>
+                <div class="bg-slate-800/50 p-6 rounded-lg h-full flex flex-col items-center justify-center">
+                    <div class="bg-sky-500 text-white p-4 rounded-lg font-bold text-xl">상태 전이 관리</div>
+                    <div class="h-12 w-1 bg-sky-500"></div>
+                    <div class="w-full h-1 bg-sky-500"></div>
+                    <div class="flex w-full justify-around mt-1">
+                        <div class="h-12 w-1 bg-sky-500"></div>
+                        <div class="h-12 w-1 bg-sky-500"></div>
+                        <div class="h-12 w-1 bg-sky-500"></div>
+                    </div>
+                    <div class="flex w-full justify-around text-center">
+                        <div class="border p-4 rounded">
+                            <h4 class="font-bold text-lg">비전팀</h4>
+                            <ul class="text-left text-sm mt-2"><li>• 헤드샷</li><li>• 피아식별</li></ul>
+                        </div>
+                        <div class="border p-4 rounded">
+                            <h4 class="font-bold text-lg">제어팀</h4>
+                            <ul class="text-left text-sm mt-2"><li>• 로봇팔</li><li>• 그리퍼</li><li>• 아두이노</li></ul>
+                        </div>
+                        <div class="border p-4 rounded">
+                            <h4 class="font-bold text-lg">인터페이스팀</h4>
+                            <ul class="text-left text-sm mt-2"><li>• 웹 UI</li><li>• 음성</li></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

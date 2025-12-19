@@ -1,0 +1,40 @@
+# OnRobot RG2 Gripper Configuration
+gripper:
+  # Modbus TCP Connection
+  modbus:
+    host: "192.168.1.1"
+    port: 502
+    unit_id: 65
+    
+  # Gripper specifications (RG2)
+  specs:
+    max_width: 110.0  # mm
+    min_width: 0.0    # mm
+    max_force: 40.0   # N
+    min_force: 3.0    # N
+    fingertip_offset: 4.5  # mm
+    
+  # Modbus Register Map
+  registers:
+    write:
+      target_force: 0     # 0-400 (0-40N)
+      target_width: 1     # 0-1100 (0-110mm)
+      control: 2          # 1 = grip command
+    read:
+      current_width: 267  # 0.1mm unit
+      grip_detected: 268  # 0/1
+      device_type: 258
+      
+  # Joint mapping for URDF
+  joints:
+    left_finger: "gripper_finger_left_joint"
+    right_finger: "gripper_finger_right_joint"
+    
+  # ROS2 Topics
+  topics:
+    joint_states: "/gripper_joint_states"
+    gripper_state: "/gripper/state"
+    gripper_command: "/gripper/command"
+    
+  # Update rate
+  publish_rate: 30.0  # Hz

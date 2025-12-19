@@ -1,0 +1,25 @@
+# Gripper Control Configuration
+# OnRobot RG2 for Doosan Robot
+
+gripper:
+  model: "rg2_v1"
+  
+  # Doosan Tool I/O Configuration
+  tool_io:
+    # Digital outputs for gripper control
+    open_pin: 1
+    close_pin: 2
+    # Analog input for position feedback
+    position_pin: 0
+    
+  # Gripper parameters
+  params:
+    max_width: 0.11      # 110mm max opening
+    min_width: 0.0       # 0mm closed
+    max_force: 40.0      # 40N max force
+    default_force: 20.0  # Default gripping force
+    
+  # Joint state publishing
+  joint_state:
+    publish_rate: 50     # Hz
+    joint_name: "gripper_joint"

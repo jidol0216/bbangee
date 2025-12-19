@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 2-2: Problem Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .slide { width: 1280px; height: 720px; background-color: #0f172a; }
+    </style>
+</head>
+<body class="bg-gray-200 flex items-center justify-center h-screen">
+    <div class="slide shadow-2xl rounded-lg flex flex-col p-16">
+        <h2 class="text-5xl font-bold text-slate-100 pb-6 border-b-4 border-sky-500">
+            2.2 문제점 상세 분석
+        </h2>
+        <div class="flex-1 flex flex-col justify-center mt-8 text-slate-300">
+            <h3 class="text-3xl font-bold mb-6 text-center">사고 위험 시나리오</h3>
+            <div class="space-y-6">
+                <div class="bg-slate-800/50 p-4 rounded-lg">
+                    <h4 class="text-xl font-bold text-sky-400">시나리오 1: 피로로 인한 침입 감지 실패</h4>
+                    <div class="flex items-center justify-around mt-2 text-center">
+                        <div><i class="fa-solid fa-clock text-4xl"></i><p>야간 2시</p></div>
+                        <i class="fa-solid fa-arrow-right-long text-2xl"></i>
+                        <div><i class="fa-solid fa-bed text-4xl"></i><p>초병 졸음</p></div>
+                        <i class="fa-solid fa-arrow-right-long text-2xl"></i>
+                        <div><i class="fa-solid fa-user-secret text-4xl"></i><p>침입자 접근</p></div>
+                        <i class="fa-solid fa-arrow-right-long text-2xl"></i>
+                        <div><i class="fa-solid fa-circle-xmark text-4xl text-red-500"></i><p>감지 실패</p></div>
+                        <i class="fa-solid fa-arrow-right-long text-2xl"></i>
+                        <div><i class="fa-solid fa-bomb text-4xl text-red-500"></i><p>보안 사고</p></div>
+                    </div>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-lg">
+                    <h4 class="text-xl font-bold text-sky-400">시나리오 2: 피아식별 오류</h4>
+                    <div class="flex items-center justify-around mt-2 text-center">
+                        <div><i class="fa-solid fa-user-shield text-4xl"></i><p>아군 접근</p></div>
+                        <i class="fa-solid fa-arrow-right-long text-2xl"></i>
+                        <div><i class="fa-solid fa-face-tired text-4xl"></i><p>피로한 초병</p></div>
+                        <i class="fa-solid fa-arrow-right-long text-2xl"></i>
+                        <div><i class="fa-solid fa-user-xmark text-4xl text-yellow-500"></i><p>적군으로 오인</p></div>
+                        <i class="fa-solid fa-arrow-right-long text-2xl"></i>
+                        <div><i class="fa-solid fa-person-military-pointing text-4xl text-yellow-500"></i><p>아군 피해</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
