@@ -65,6 +65,18 @@ export default function GripperControl() {
     }
   };
 
+  // 권총 파지/거치
+  const handlePistol = async (action: "grip" | "holster") => {
+    setLoading(true);
+    try {
+      await api.post(`/pistol/${action}`);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="panel gripper-panel">
       <div className="panel-header">
@@ -153,6 +165,39 @@ export default function GripperControl() {
             style={{flex: 1, padding: '10px'}}
           >
             ✊ 닫기
+          </button>
+        </div>
+
+        {/* 권총 파지/거치 버튼 */}
+        <div style={{fontSize: '11px', color: '#666', marginBottom: '6px'}}>🔫 권총 제어</div>
+        <div style={{display: 'flex', gap: '8px', marginBottom: '12px'}}>
+          <button
+            className="btn"
+            onClick={() => handlePistol("grip")}
+            disabled={loading}
+            style={{
+              flex: 1, 
+              padding: '12px',
+              background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%)',
+              border: 'none',
+              fontWeight: 'bold'
+            }}
+          >
+            🔫 권총 파지
+          </button>
+          <button
+            className="btn"
+            onClick={() => handlePistol("holster")}
+            disabled={loading}
+            style={{
+              flex: 1, 
+              padding: '12px',
+              background: 'linear-gradient(135deg, #4a9eff 0%, #3a8eef 100%)',
+              border: 'none',
+              fontWeight: 'bold'
+            }}
+          >
+            📥 권총 거치
           </button>
         </div>
 

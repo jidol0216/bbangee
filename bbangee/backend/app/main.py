@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
-from app.routers import people, access, voice, devices, ros2, scenario, robot, armband, gripper
+from app.routers import people, access, voice, devices, ros2, scenario, robot, armband, gripper, pistol_grip
 
 app = FastAPI(title="Security System API")
 
@@ -34,6 +34,7 @@ app.include_router(scenario.router)
 app.include_router(robot.router)
 app.include_router(armband.router)
 app.include_router(gripper.router)
+app.include_router(pistol_grip.router)
 
 @app.get("/")
 def hello():
