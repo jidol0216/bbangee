@@ -191,9 +191,7 @@ class ScenarioManager:
         # OCR 활성화 (이제 RAW/ROI 화면 표시됨)
         await self._set_ocr_enabled(True)
         
-        # 0.5초 후 피아식별띠 안내 TTS
-        await asyncio.sleep(0.5)
-        await self._play_tts("카메라 렌즈에 피아식별띠를 위치시키십시오.")
+        # 피아식별띠 안내 TTS 제거됨 (불필요)
         
         # 브로드캐스트
         await self.broadcast({
@@ -409,20 +407,19 @@ class ScenarioManager:
         if faction in ["UNKNOWN", "ERROR", ""]:
             self.ocr_fail_count += 1
             
-            # OCR 실패가 반복되면 TTS 안내 (한 번만) - 상태 재확인
+            # OCR 실패가 반복되면 로그만 남김 (TTS 안내 제거)
             if self.ocr_fail_count >= self.ocr_fail_tts_threshold and not self.ocr_fail_tts_played:
                 # 상태가 변경되었으면 무시
                 if self.state != ScenarioState.DETECTED:
                     return {"success": False, "message": "상태가 변경되어 OCR 무시"}
                 
-                self.ocr_fail_tts_played = True  # TTS 전에 플래그 설정 (race condition 방지)
-                await self._play_tts("카메라 렌즈에 피아식별띠를 잘 보이게 위치시키십시오.")
-                self._add_history("OCR 실패 반복 - TTS 안내")
+                self.ocr_fail_tts_played = True
+                self._add_history("OCR 실패 반복")
                 
                 # 브로드캐스트
                 await self.broadcast({
                     "type": "ocr_guide",
-                    "message": "피아식별띠를 카메라에 잘 보이게 해주세요",
+                    "message": "OCR 인식 대기 중",
                     "ocr_fail_count": self.ocr_fail_count,
                     "ally_count": self.ocr_ally_count,
                     "enemy_count": self.ocr_enemy_count
