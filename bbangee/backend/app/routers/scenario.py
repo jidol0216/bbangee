@@ -185,11 +185,15 @@ class ScenarioManager:
         # TTS 완료 대기
         await asyncio.sleep(self.delay_after_detect)
         
-        # TTS 2: 식별 시퀀스 안내 (2초)
+        # TTS 2: 식별 시퀀스 안내
         await self._play_tts("접근자 얼굴 감지. 식별 시퀀스 진행.")
         
         # OCR 활성화 (이제 RAW/ROI 화면 표시됨)
         await self._set_ocr_enabled(True)
+        
+        # 0.5초 후 피아식별띠 안내 TTS
+        await asyncio.sleep(0.5)
+        await self._play_tts("카메라 렌즈에 피아식별띠를 위치시키십시오.")
         
         # 브로드캐스트
         await self.broadcast({
@@ -509,6 +513,9 @@ class ScenarioManager:
         # OCR 비활성화 (검은 화면으로)
         await self._set_ocr_enabled(False)
         
+        # Voice 상태 리셋 (이전 인증 상태 초기화)
+        await self._reset_voice_state()
+        
         # 추적 속도 초기화
         await self._send_tracking_speed_reset()
         
@@ -601,10 +608,10 @@ class ScenarioManager:
         except Exception as e:
             print(f"음성 인식 시작 실패: {e}")
     
-    async def _start_voice_auth(self, timeout_sec: float = 4.0):
+    async def _start_voice_auth(self, timeout_sec: float = 5.0):
         """
         Voice Panel 방식의 전체 음성 인증 시작
-        TTS("정지!") + TTS("암구호! {질문}!") + 녹음 + STT + 시나리오 제출
+        TTS("암구호! {질문}!") + 녹음 + STT + 시나리오 제출
         """
         import httpx
         
@@ -613,13 +620,28 @@ class ScenarioManager:
                 response = await client.post(
                     "http://localhost:8000/voice/request-auth",
                     json={"timeout_sec": timeout_sec, "voice": "eric"},
-                    timeout=2.0
+                    timeout=5.0  # 타임아웃 늘림 (백그라운드 태스크 시작 대기)
                 )
                 result = response.json()
                 print(f"🎤 음성 인증 시작 (Voice Panel 방식): {result}")
                 self._add_history("음성 인증 시작")
         except Exception as e:
             print(f"음성 인증 시작 실패: {e}")
+    
+    async def _reset_voice_state(self):
+        """Voice 상태 리셋 (시나리오 리셋 시 호출)"""
+        import httpx
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "http://localhost:8000/voice/reset",
+                    timeout=2.0
+                )
+                result = response.json()
+                print(f"🔄 Voice 상태 리셋: {result}")
+        except Exception as e:
+            print(f"Voice 상태 리셋 실패: {e}")
 
     async def _play_alert_buzzer(self, alert_type: str = "warning"):
         """

@@ -268,7 +268,10 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
             answer = auth_state["answer"]
         
         # 1. TTS: 질문만 (정지!는 시나리오에서 이미 말함)
+        print(f"🔊 TTS 시작: 암구호! {question}!", flush=True)
         elevenlabs_speak(f"암구호! {question}!", voice_id)
+        print("🔊 TTS 완료, 1초 대기 후 녹음 시작", flush=True)
+        time.sleep(1.0)  # TTS 끝난 후 잠시 대기 (마이크가 TTS 소리 안 잡도록)
         
         # 2. 상태 변경: LISTENING
         with state_lock:
@@ -286,7 +289,7 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
         
         # 5. STT
         recognized = speech_to_text(audio_data, rate=sample_rate)
-        print(f"📝 인식된 텍스트: {recognized}")
+        print(f"📝 인식된 텍스트: '{recognized}'", flush=True)
         
         with state_lock:
             auth_state["recognized_text"] = recognized
@@ -294,7 +297,9 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
         # 6. 시나리오 시스템에 자동 제출 (인식된 텍스트가 있으면)
         if recognized.strip():
             scenario_result = submit_to_scenario(recognized.strip())
-            print(f"📤 시나리오 제출 결과: {scenario_result}")
+            print(f"📤 시나리오 제출 결과: {scenario_result}", flush=True)
+        else:
+            print("⚠️ 인식된 텍스트 없음 - 시나리오 제출 건너뜀", flush=True)
         
         # 7. 암구호 비교 (로컬 확인용)
         is_match = check_passphrase(recognized, answer)
@@ -312,8 +317,7 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
         # 9. 결과 TTS는 시나리오 시스템에서 처리하므로 생략
         # (시나리오가 암구호 결과에 따라 TTS를 재생함)
         
-        # 10. 잠시 후 IDLE로 복귀
-        time.sleep(2)
+        # 10. 바로 IDLE로 복귀 (다음 인증 가능하도록)
         with state_lock:
             auth_state["status"] = "IDLE"
             save_state()
@@ -325,7 +329,7 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
             auth_state["recognized_text"] = str(e)
             save_state()
         
-        time.sleep(3)
+        time.sleep(1)
         with state_lock:
             auth_state["status"] = "IDLE"
             save_state()
@@ -346,6 +350,18 @@ def get_voice_auth_status():
             "last_result": auth_state.get("last_result"),
             "voice_auth_running": True  # 백엔드에서 직접 처리하므로 항상 True
         }
+
+
+@router.post("/reset")
+def reset_voice_state():
+    """Voice 상태 강제 리셋 (시나리오 리셋 시 호출)"""
+    with state_lock:
+        auth_state["status"] = "IDLE"
+        auth_state["recognized_text"] = ""
+        auth_state["last_result"] = None
+        save_state()
+    
+    return {"success": True, "message": "Voice 상태 리셋됨"}
 
 
 @router.post("/passphrase")
