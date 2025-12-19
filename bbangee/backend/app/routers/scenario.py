@@ -69,7 +69,7 @@ class ScenarioManager:
         self.ocr_timeout = 30.0             # OCR 인식 타임아웃 (초)
         
         # 상태 전이 지연 설정 (사람 연기 시간 확보)
-        self.delay_after_detect = 4.0       # 얼굴 감지 후 TTS 완료 대기 (초)
+        self.delay_after_detect = 1.5       # 얼굴 감지 후 TTS 완료 대기 (초)
         self.delay_after_identify = 5.0     # 피아식별 후 암구호 TTS 대기 (초)
     
     def set_password(self, challenge: str, response: str = None) -> dict:
@@ -210,6 +210,9 @@ class ScenarioManager:
         """피아 식별"""
         if self.state != ScenarioState.DETECTED:
             return {"success": False, "message": "감지 상태가 아닙니다"}
+        
+        # 🔒 OCR 비활성화 (피아식별 완료 후 더 이상 OCR 불필요)
+        await self._set_ocr_enabled(False)
         
         self.person_type = PersonType.ALLY if is_ally else PersonType.ENEMY
         self.state = ScenarioState.PASSWORD_CHECK
