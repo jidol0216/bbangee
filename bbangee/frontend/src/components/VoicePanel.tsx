@@ -10,6 +10,8 @@
  * 2. 암구호 설정 변경 - /passphrase API 호출
  * 3. 실시간 상태 표시 - /status API 폴링
  * 4. ElevenLabs TTS - /speak, /tts API 호출
+ * 
+ * ⚠️ 시나리오 진행 중에는 모든 기능 비활성화 (충돌 방지)
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { api } from "../api/client";
@@ -30,6 +32,10 @@ interface VoiceAuthStatus {
   voice_auth_running: boolean;
 }
 
+interface ScenarioStatus {
+  state: string;
+}
+
 const VOICES: Voice[] = [
   { id: "eric", name: "Eric", description: "남성 (기본)" },
   { id: "chris", name: "Chris", description: "남성 - 친근한" },
@@ -47,6 +53,9 @@ const STATUS_STYLES: Record<string, { class: string; icon: string; text: string 
   ERROR: { class: "error", icon: "⚠️", text: "오류 발생" },
 };
 
+// 시나리오 진행 중인 상태들 (이 상태일 때 보이스 패널 비활성화)
+const SCENARIO_ACTIVE_STATES = ["DETECTED", "PASSWORD_CHECK", "ALLY_PASS", "ALLY_ALERT", "ENEMY_ALERT"];
+
 export default function VoicePanel() {
   const [text, setText] = useState("");
   const [voice, setVoice] = useState("adam");
@@ -59,12 +68,22 @@ export default function VoicePanel() {
   const [newQuestion, setNewQuestion] = useState("");
   const [newAnswer, setNewAnswer] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  
+  // 시나리오 상태 (보이스 패널 비활성화 여부 판단용)
+  const [scenarioState, setScenarioState] = useState<string>("IDLE");
 
-  // 상태 폴링 (1초마다)
+  // 시나리오가 진행 중인지 여부
+  const isScenarioActive = SCENARIO_ACTIVE_STATES.includes(scenarioState);
+
+  // 상태 폴링 (1초마다) - voice + scenario 동시 폴링
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await api.get("/voice/status");
-      setAuthStatus(res.data);
+      const [voiceRes, scenarioRes] = await Promise.all([
+        api.get("/voice/status"),
+        api.get("/scenario/status")
+      ]);
+      setAuthStatus(voiceRes.data);
+      setScenarioState(scenarioRes.data.state || "IDLE");
     } catch (err) {
       // 폴링 에러는 무시
     }
@@ -187,6 +206,24 @@ export default function VoicePanel() {
 
       <div className="panel-body">
         {error && <div className="error-message">{error}</div>}
+        
+        {/* 시나리오 진행 중 경고 메시지 */}
+        {isScenarioActive && (
+          <div className="scenario-active-warning" style={{
+            background: "rgba(255, 193, 7, 0.2)",
+            border: "1px solid #ffc107",
+            borderRadius: "8px",
+            padding: "10px",
+            marginBottom: "10px",
+            textAlign: "center",
+            color: "#ffc107"
+          }}>
+            ⚠️ 시나리오 진행 중 - 보이스 패널 비활성화
+            <div style={{ fontSize: "12px", opacity: 0.8 }}>
+              상태: {scenarioState}
+            </div>
+          </div>
+        )}
 
         {/* 실시간 인증 상태 */}
         <div className={`auth-status-box ${statusInfo.class}`}>
@@ -222,9 +259,9 @@ export default function VoicePanel() {
           <button
             className={`btn btn-warning btn-block ${authLoading ? "loading" : ""}`}
             onClick={startAuthTest}
-            disabled={authLoading || authStatus?.status === "LISTENING" || authStatus?.status === "PROCESSING"}
+            disabled={isScenarioActive || authLoading || authStatus?.status === "LISTENING" || authStatus?.status === "PROCESSING"}
           >
-            {authLoading ? "🔄 인증 진행 중..." : "🔒 암구호 테스트 시작"}
+            {isScenarioActive ? "🚫 시나리오 진행 중" : authLoading ? "🔄 인증 진행 중..." : "🔒 암구호 테스트 시작"}
           </button>
           <small className="help-text">
             TTS로 질문 → 마이크 녹음 (3.5초) → STT 인식 → 판정
@@ -241,6 +278,7 @@ export default function VoicePanel() {
               onChange={(e) => setNewQuestion(e.target.value)}
               placeholder="질문 (예: 까마귀)"
               className="passphrase-input"
+              disabled={isScenarioActive}
             />
             <span className="arrow-text">→</span>
             <input
@@ -250,11 +288,12 @@ export default function VoicePanel() {
               placeholder="답변 (예: 백두산)"
               className="passphrase-input"
               onKeyDown={(e) => e.key === "Enter" && updatePassphrase()}
+              disabled={isScenarioActive}
             />
             <button
               className="btn btn-sm btn-success"
               onClick={updatePassphrase}
-              disabled={loading || !newQuestion.trim() || !newAnswer.trim()}
+              disabled={isScenarioActive || loading || !newQuestion.trim() || !newAnswer.trim()}
             >
               변경
             </button>
@@ -264,7 +303,7 @@ export default function VoicePanel() {
         {/* 음성 선택 */}
         <div className="voice-select">
           <label>🎙️ ElevenLabs 음성:</label>
-          <select value={voice} onChange={(e) => setVoice(e.target.value)}>
+          <select value={voice} onChange={(e) => setVoice(e.target.value)} disabled={isScenarioActive}>
             {VOICES.map((v) => (
               <option key={v.id} value={v.id}>
                 {v.name} ({v.description})
@@ -280,14 +319,14 @@ export default function VoicePanel() {
             <button
               className="btn btn-primary"
               onClick={() => forceDecision(true)}
-              disabled={loading}
+              disabled={isScenarioActive || loading}
             >
               👋 아군으로 처리
             </button>
             <button
               className="btn btn-danger"
               onClick={() => forceDecision(false)}
-              disabled={loading}
+              disabled={isScenarioActive || loading}
             >
               🚫 적군으로 처리
             </button>
@@ -302,12 +341,13 @@ export default function VoicePanel() {
             onChange={(e) => setText(e.target.value)}
             placeholder="음성으로 변환할 텍스트를 입력하세요..."
             rows={2}
+            disabled={isScenarioActive}
           />
           <div className="voice-actions">
             <button
               className="btn btn-primary"
               onClick={() => speakOnServer(text)}
-              disabled={loading || !text.trim()}
+              disabled={isScenarioActive || loading || !text.trim()}
               title="서버(로봇 옆) 스피커로 재생"
             >
               🔈 서버 재생
@@ -315,7 +355,7 @@ export default function VoicePanel() {
             <button
               className="btn btn-secondary"
               onClick={() => speakOnBrowser(text)}
-              disabled={loading || !text.trim()}
+              disabled={isScenarioActive || loading || !text.trim()}
               title="웹 브라우저에서 재생"
             >
               🎧 브라우저 재생

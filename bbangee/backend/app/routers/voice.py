@@ -53,7 +53,8 @@ auth_state = {
     "answer": "협동",        # 시나리오와 동일
     "recognized_text": "",
     "last_result": None,
-    "enabled": True
+    "enabled": True,
+    "scenario_locked": False  # 시나리오가 사용 중일 때 True (보이스 패널 차단)
 }
 state_lock = threading.Lock()
 
@@ -67,6 +68,7 @@ class PassphraseRequest(BaseModel):
     """암구호 설정 요청"""
     question: str = "까마귀"
     answer: str = "백두산"
+
 
 
 class TTSRequest(BaseModel):
@@ -162,47 +164,61 @@ def elevenlabs_speak(text: str, voice_id: str = DEFAULT_VOICE_ID, volume_boost_d
             return False
 
 
-def record_audio(duration: float = 3.5, device_index: int = 10) -> bytes:
+def record_audio(duration: float = 3.5, device_index: int = 4) -> bytes:
     """
-    마이크에서 녹음 (USB 웹캠 마이크)
+    마이크에서 녹음 (C270 HD WEBCAM - 장치 인덱스 4)
     """
     import pyaudio
+    import traceback
     
     CHUNK = 4096
     CHANNELS = 1
     FORMAT = pyaudio.paInt16
+    RATE = 48000  # C270 웹캠 기본 샘플레이트
+    
+    print(f"🎤 [record_audio] 시작 - duration={duration}, device={device_index}", flush=True)
     
     p = pyaudio.PyAudio()
     
     try:
-        # 장치 정보 확인 및 샘플레이트 자동 설정
-        info = p.get_device_info_by_index(device_index)
-        channels = min(CHANNELS, int(info['maxInputChannels']))
-        RATE = int(info['defaultSampleRate'])  # 장치의 기본 샘플레이트 사용
+        # C270 웹캠 마이크 사용 (장치 4)
+        try:
+            info = p.get_device_info_by_index(device_index)
+            print(f"🎤 마이크: [{device_index}] {info['name']}", flush=True)
+        except Exception as e:
+            print(f"⚠️ 장치 {device_index} 정보 조회 실패: {e}", flush=True)
+            traceback.print_exc()
         
-        print(f"🎤 장치 {device_index}: {info['name']}, 샘플레이트: {RATE}")
-        
+        print(f"🎤 [record_audio] stream 열기 시도...", flush=True)
         stream = p.open(
             format=FORMAT,
-            channels=channels,
+            channels=CHANNELS,
             rate=RATE,
             input=True,
             input_device_index=device_index,
             frames_per_buffer=CHUNK
         )
+        print(f"🎤 [record_audio] stream 열림!", flush=True)
         
         frames = []
         num_chunks = int(RATE / CHUNK * duration)
         
-        print(f"🎤 {duration}초 녹음 중...")
-        for _ in range(num_chunks):
+        print(f"🎤 {duration}초 녹음 중... (chunks: {num_chunks})", flush=True)
+        for i in range(num_chunks):
             data = stream.read(CHUNK, exception_on_overflow=False)
             frames.append(data)
         
         stream.stop_stream()
         stream.close()
         
-        return b"".join(frames), RATE  # 오디오 데이터와 샘플레이트 함께 반환
+        audio_bytes = b"".join(frames)
+        print(f"🎤 [record_audio] 완료! bytes={len(audio_bytes)}", flush=True)
+        
+        return audio_bytes, RATE
+    except Exception as e:
+        print(f"❌ [record_audio] 에러: {e}", flush=True)
+        traceback.print_exc()
+        return b"", RATE
     finally:
         p.terminate()
 
@@ -335,6 +351,89 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
             save_state()
 
 
+def run_auth_process_for_scenario(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
+    """
+    시나리오 전용 암구호 인증 프로세스 (백그라운드)
+    
+    run_auth_process와 동일하지만:
+    - scenario_locked 플래그를 해제함
+    - 완료 후 보이스 패널 사용 가능하도록 복원
+    """
+    global auth_state
+    
+    try:
+        with state_lock:
+            question = auth_state["question"]
+            answer = auth_state["answer"]
+        
+        # 1. TTS: 질문
+        print(f"🔊 [시나리오] TTS 시작: 암구호! {question}!", flush=True)
+        elevenlabs_speak(f"암구호! {question}!", voice_id)
+        print("🔊 [시나리오] TTS 완료, 1초 대기 후 녹음 시작", flush=True)
+        time.sleep(1.0)
+        
+        # 2. 상태 변경: LISTENING
+        with state_lock:
+            auth_state["status"] = "LISTENING"
+            auth_state["recognized_text"] = ""
+            save_state()
+        
+        # 3. 마이크 녹음 (5초)
+        audio_data, sample_rate = record_audio(duration=5.0)
+        
+        # 4. 상태 변경: PROCESSING
+        with state_lock:
+            auth_state["status"] = "PROCESSING"
+            save_state()
+        
+        # 5. STT
+        recognized = speech_to_text(audio_data, rate=sample_rate)
+        print(f"📝 [시나리오] 인식된 텍스트: '{recognized}'", flush=True)
+        
+        with state_lock:
+            auth_state["recognized_text"] = recognized
+        
+        # 6. 시나리오 시스템에 자동 제출
+        if recognized.strip():
+            scenario_result = submit_to_scenario(recognized.strip())
+            print(f"📤 [시나리오] 제출 결과: {scenario_result}", flush=True)
+        else:
+            print("⚠️ [시나리오] 인식된 텍스트 없음 - 시나리오 제출 건너뜀", flush=True)
+        
+        # 7. 암구호 비교
+        is_match = check_passphrase(recognized, answer)
+        
+        # 8. 결과 처리
+        with state_lock:
+            if is_match:
+                auth_state["status"] = "SUCCESS"
+                auth_state["last_result"] = True
+            else:
+                auth_state["status"] = "FAILED"
+                auth_state["last_result"] = False
+            save_state()
+        
+        # 9. IDLE로 복귀 + scenario_locked 해제
+        with state_lock:
+            auth_state["status"] = "IDLE"
+            auth_state["scenario_locked"] = False  # 시나리오 락 해제
+            save_state()
+        print("🔓 [시나리오] 음성 인증 완료, 보이스 패널 락 해제", flush=True)
+            
+    except Exception as e:
+        print(f"[시나리오] 인증 프로세스 오류: {e}")
+        with state_lock:
+            auth_state["status"] = "ERROR"
+            auth_state["recognized_text"] = str(e)
+            auth_state["scenario_locked"] = False  # 에러 시에도 락 해제
+            save_state()
+        
+        time.sleep(1)
+        with state_lock:
+            auth_state["status"] = "IDLE"
+            save_state()
+
+
 # ==================== Endpoints ====================
 
 @router.get("/status")
@@ -359,6 +458,7 @@ def reset_voice_state():
         auth_state["status"] = "IDLE"
         auth_state["recognized_text"] = ""
         auth_state["last_result"] = None
+        auth_state["scenario_locked"] = False  # 시나리오 락도 해제
         save_state()
     
     return {"success": True, "message": "Voice 상태 리셋됨"}
@@ -380,23 +480,49 @@ def set_passphrase(req: PassphraseRequest):
 
 
 @router.post("/request-auth")
-async def request_auth(req: AuthRequest, background_tasks: BackgroundTasks):
+async def request_auth(req: AuthRequest):
     """
-    암구호 인증 요청
+    암구호 인증 요청 (보이스 패널용 - 시나리오 진행 중 차단됨)
     
     백그라운드에서 TTS → 마이크 녹음 → STT → 판정 진행
     """
     with state_lock:
+        # 시나리오가 사용 중이면 차단
+        if auth_state.get("scenario_locked", False):
+            return {"success": False, "error": "시나리오 진행 중 - 보이스 패널 사용 불가"}
         if auth_state["status"] != "IDLE":
             return {"success": False, "error": "이미 인증 진행 중"}
         auth_state["status"] = "PROCESSING"
         save_state()
     
-    # 백그라운드에서 인증 프로세스 실행
+    # threading으로 백그라운드 실행 (BackgroundTasks 대신)
     voice_id = ELEVENLABS_VOICE_IDS.get(req.voice, DEFAULT_VOICE_ID)
-    background_tasks.add_task(run_auth_process, req.timeout_sec, voice_id)
+    thread = threading.Thread(target=run_auth_process, args=(req.timeout_sec, voice_id), daemon=True)
+    thread.start()
     
     return {"success": True, "message": "인증 시작됨"}
+
+
+@router.post("/scenario-request-auth")
+async def scenario_request_auth(req: AuthRequest):
+    """
+    암구호 인증 요청 (시나리오 전용 - 우선순위 높음)
+    
+    시나리오에서만 호출. scenario_locked 플래그 설정하여 보이스 패널 차단
+    """
+    with state_lock:
+        if auth_state["status"] != "IDLE":
+            return {"success": False, "error": "이미 인증 진행 중"}
+        auth_state["status"] = "PROCESSING"
+        auth_state["scenario_locked"] = True  # 시나리오 전용 락
+        save_state()
+    
+    # threading으로 백그라운드 실행
+    voice_id = ELEVENLABS_VOICE_IDS.get(req.voice, DEFAULT_VOICE_ID)
+    thread = threading.Thread(target=run_auth_process_for_scenario, args=(req.timeout_sec, voice_id), daemon=True)
+    thread.start()
+    
+    return {"success": True, "message": "시나리오 인증 시작됨"}
 
 
 @router.post("/speak")

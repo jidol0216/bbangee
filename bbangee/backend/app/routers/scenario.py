@@ -69,7 +69,7 @@ class ScenarioManager:
         self.ocr_timeout = 30.0             # OCR 인식 타임아웃 (초)
         
         # 상태 전이 지연 설정 (사람 연기 시간 확보)
-        self.delay_after_detect = 1.5       # 얼굴 감지 후 TTS 완료 대기 (초)
+        self.delay_after_detect = 0.3       # 얼굴 감지 후 TTS 완료 대기 (초)
         self.delay_after_identify = 5.0     # 피아식별 후 암구호 TTS 대기 (초)
     
     def set_password(self, challenge: str, response: str = None) -> dict:
@@ -409,10 +409,14 @@ class ScenarioManager:
         if faction in ["UNKNOWN", "ERROR", ""]:
             self.ocr_fail_count += 1
             
-            # OCR 실패가 반복되면 TTS 안내 (한 번만)
+            # OCR 실패가 반복되면 TTS 안내 (한 번만) - 상태 재확인
             if self.ocr_fail_count >= self.ocr_fail_tts_threshold and not self.ocr_fail_tts_played:
+                # 상태가 변경되었으면 무시
+                if self.state != ScenarioState.DETECTED:
+                    return {"success": False, "message": "상태가 변경되어 OCR 무시"}
+                
+                self.ocr_fail_tts_played = True  # TTS 전에 플래그 설정 (race condition 방지)
                 await self._play_tts("카메라 렌즈에 피아식별띠를 잘 보이게 위치시키십시오.")
-                self.ocr_fail_tts_played = True
                 self._add_history("OCR 실패 반복 - TTS 안내")
                 
                 # 브로드캐스트
@@ -467,9 +471,9 @@ class ScenarioManager:
             self.ocr_locked_faction = final_faction
             print(f"🔒 OCR 결과 락: {final_faction} (ALLY={self.ocr_ally_count}, ENEMY={self.ocr_enemy_count})")
             
-            # OCR 실패 카운트 리셋
+            # OCR 실패 카운트 리셋 (TTS 플래그는 유지! - PASSWORD_CHECK에서 TTS 방지)
             self.ocr_fail_count = 0
-            self.ocr_fail_tts_played = False
+            # self.ocr_fail_tts_played = False  # 리셋하지 않음 - race condition 방지
             
             # 자동 피아식별 실행
             is_ally = (final_faction == "ALLY")
@@ -610,23 +614,25 @@ class ScenarioManager:
     
     async def _start_voice_auth(self, timeout_sec: float = 5.0):
         """
-        Voice Panel 방식의 전체 음성 인증 시작
+        시나리오 전용 음성 인증 시작
         TTS("암구호! {질문}!") + 녹음 + STT + 시나리오 제출
+        
+        ⚠️ /voice/scenario-request-auth 사용 (보이스 패널과 독립)
         """
         import httpx
         
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    "http://localhost:8000/voice/request-auth",
+                    "http://localhost:8000/voice/scenario-request-auth",  # 시나리오 전용 API
                     json={"timeout_sec": timeout_sec, "voice": "eric"},
-                    timeout=5.0  # 타임아웃 늘림 (백그라운드 태스크 시작 대기)
+                    timeout=5.0
                 )
                 result = response.json()
-                print(f"🎤 음성 인증 시작 (Voice Panel 방식): {result}")
+                print(f"🎤 [시나리오] 음성 인증 시작: {result}")
                 self._add_history("음성 인증 시작")
         except Exception as e:
-            print(f"음성 인증 시작 실패: {e}")
+            print(f"[시나리오] 음성 인증 시작 실패: {e}")
     
     async def _reset_voice_state(self):
         """Voice 상태 리셋 (시나리오 리셋 시 호출)"""
