@@ -61,7 +61,9 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # ROS2 환경 설정
 source /opt/ros/humble/setup.bash
-source /home/rokey/ros2_ws/install/setup.bash
+source /home/jidol/ros2_ws/install/setup.bash
+export ROS_DOMAIN_ID=64
+export ROS_LOCALHOST_ONLY=0
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  🤖 전체 시스템 시작${NC}"
@@ -77,16 +79,16 @@ pkill -f "vite" 2>/dev/null
 sleep 1
 
 # ==========================================
-# 1. 두산 로봇 드라이버 + 그리퍼/카메라 URDF
+# 1. 두산 로봇 드라이버
 # ==========================================
-echo -e "${CYAN}[1/7] 두산 로봇 드라이버 시작 (그리퍼+카메라 URDF 포함)...${NC}"
-ros2 launch gripper_camera_description dsr_bringup2_with_gripper.launch.py \
+echo -e "${CYAN}[1/7] 두산 로봇 드라이버 시작...${NC}"
+ros2 launch dsr_bringup2 dsr_bringup2_rviz.launch.py \
     name:=dsr01 model:=m0609 host:=192.168.1.100 port:=12345 mode:=real \
     > /tmp/ros2_bringup.log 2>&1 &
 PIDS+=($!)
-NAMES+=("Doosan Bringup with Gripper")
+NAMES+=("Doosan Robot Driver")
 echo "  → PID: ${PIDS[-1]}"
-sleep 3
+sleep 5
 
 # ==========================================
 # 2. 그리퍼 RViz 동기화 (Modbus)
@@ -197,15 +199,15 @@ sleep 1
 echo -e "${CYAN}[7/8] 웹 서버 시작...${NC}"
 
 # 백엔드
-cd /home/rokey/ros2_ws/src/bbangee/bbangee/backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
+cd /home/jidol/bbangee/bbangee/backend
+/home/jidol/bbangee/.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
 PIDS+=($!)
 NAMES+=("Backend (FastAPI)")
 echo "  → Backend PID: ${PIDS[-1]}"
 sleep 1
 
 # 프론트엔드
-cd /home/rokey/ros2_ws/src/bbangee/bbangee/frontend
+cd /home/jidol/bbangee/bbangee/frontend
 npm run dev -- --host 0.0.0.0 > /tmp/frontend.log 2>&1 &
 PIDS+=($!)
 NAMES+=("Frontend (Vite)")

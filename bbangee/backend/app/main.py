@@ -2,24 +2,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
+from app.services.config import CORS_ORIGINS
 from app.routers import people, access, voice, devices, ros2, scenario, robot, armband, gripper, pistol_grip
 
 app = FastAPI(title="Security System API")
 
-# ✅ CORS를 가장 먼저
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://192.168.10.50:5173",
-        
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# ✅ 1. CORS를 가장 먼저
 
 # DB 생성
 Base.metadata.create_all(bind=engine)
@@ -35,6 +30,7 @@ app.include_router(robot.router)
 app.include_router(armband.router)
 app.include_router(gripper.router)
 app.include_router(pistol_grip.router)
+
 
 @app.get("/")
 def hello():
