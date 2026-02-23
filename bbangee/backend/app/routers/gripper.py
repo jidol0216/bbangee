@@ -3,7 +3,7 @@
 그리퍼 제어 API
 - OnRobot RG2 그리퍼 제어
 - gripper_rviz_sync 패키지와 연동
-- 파일 기반 상태 공유 (/tmp/gripper_state.json)
+- 파일 기반 상태 공유
 """
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -13,11 +13,9 @@ import json
 import os
 import time
 
-router = APIRouter(prefix="/gripper", tags=["Gripper"])
+from app.services.config import GRIPPER_STATE_FILE, GRIPPER_COMMAND_FILE
 
-# 상태 파일 (gripper_state_publisher가 작성)
-GRIPPER_STATE_FILE = '/tmp/gripper_state.json'
-GRIPPER_COMMAND_FILE = '/tmp/gripper_command.json'
+router = APIRouter(prefix="/gripper", tags=["Gripper"])
 
 # ROS2 환경 설정
 def run_ros2_command(cmd: list, timeout: float = 5.0) -> subprocess.CompletedProcess:
