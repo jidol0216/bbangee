@@ -52,7 +52,7 @@ cleanup() {
     pkill -f "joint_state_merger" 2>/dev/null
     
     sleep 1
-    echo -e "${GREEN}✅ 모든 프로세스 종료 완료!${NC}"
+    echo -e "${GREEN} 모든 프로세스 종료 완료!${NC}"
     exit 0
 }
 
@@ -66,7 +66,7 @@ export ROS_DOMAIN_ID=64
 export ROS_LOCALHOST_ONLY=0
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  🤖 전체 시스템 시작${NC}"
+echo -e "${GREEN}   전체 시스템 시작${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
@@ -219,15 +219,15 @@ sleep 2
 # ==========================================
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  ✅ 전체 시스템 실행 완료!${NC}"
+echo -e "${GREEN}   전체 시스템 실행 완료!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "  🤖 로봇:       Doosan M0609 (192.168.1.100)"
-echo -e "  📷 카메라:     RealSense D435"
-echo -e "  🌐 프론트엔드: ${BLUE}http://localhost:5173${NC}"
-echo -e "  📡 백엔드 API: ${BLUE}http://localhost:8000${NC}"
+echo -e "   로봇:       Doosan M0609 (192.168.1.100)"
+echo -e "   카메라:     RealSense D435"
+echo -e "   프론트엔드: ${BLUE}http://localhost:5173${NC}"
+echo -e "   백엔드 API: ${BLUE}http://localhost:8000${NC}"
 echo ""
-echo -e "  📋 로그 확인:"
+echo -e "   로그 확인:"
 echo -e "     tail -f /tmp/ros2_bringup.log      # 로봇 드라이버"
 echo -e "     tail -f /tmp/ros2_camera.log       # 카메라"
 echo -e "     tail -f /tmp/ros2_detection.log    # 얼굴 검출"
@@ -236,7 +236,7 @@ echo -e "     tail -f /tmp/ros2_bridge.log       # 웹 브릿지"
 echo -e "     tail -f /tmp/backend.log           # 백엔드"
 echo -e "     tail -f /tmp/frontend.log          # 프론트엔드"
 echo ""
-echo -e "${YELLOW}  ⏹️  Ctrl+C 를 누르면 모든 프로세스가 자동 종료됩니다${NC}"
+echo -e "${YELLOW}  ⏹  Ctrl+C 를 누르면 모든 프로세스가 자동 종료됩니다${NC}"
 echo ""
 
 # 프로세스 모니터링
@@ -252,7 +252,7 @@ while true; do
     
     # 절반 이상 죽으면 경고
     if [ $DEAD_COUNT -gt $((${#PIDS[@]} / 2)) ]; then
-        echo -e "${RED}⚠️ 다수의 프로세스가 종료되었습니다. 시스템을 재시작하세요.${NC}"
+        echo -e "${RED} 다수의 프로세스가 종료되었습니다. 시스템을 재시작하세요.${NC}"
         break
     fi
 done

@@ -10,7 +10,7 @@ echo ""
 
 # 서버 체크
 if ! curl -s http://localhost:8000/scenario/status > /dev/null 2>&1; then
-    echo "❌ 백엔드 서버가 실행 중이 아닙니다!"
+    echo " 백엔드 서버가 실행 중이 아닙니다!"
     echo ""
     echo "다음 명령으로 서버를 먼저 시작하세요:"
     echo ""
@@ -20,7 +20,7 @@ if ! curl -s http://localhost:8000/scenario/status > /dev/null 2>&1; then
     exit 1
 fi
 
-echo "✅ 서버 연결 확인됨"
+echo " 서버 연결 확인됨"
 echo ""
 
 python3 test_scenario.py "$@"

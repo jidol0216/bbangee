@@ -63,7 +63,7 @@ def set_ocr_enabled_internal(enabled: bool):
             armband_state["latest_roi_result"] = None
             armband_state["detection_info"] = None
             armband_state["ocr_result"] = None
-    print(f"🎯 OCR {'활성화' if enabled else '비활성화'}")
+    print(f" OCR {'활성화' if enabled else '비활성화'}")
 
 
 # ==================== 시나리오 연동 (직접 호출) ====================

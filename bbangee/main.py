@@ -6,7 +6,7 @@ from app.routers import people, access, voice, devices
 
 app = FastAPI(title="Security System API")
 
-# ✅ CORS를 가장 먼저
+#  CORS를 가장 먼저
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -19,7 +19,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# ✅ 1. CORS를 가장 먼저
+#  1. CORS를 가장 먼저
 
 # DB 생성
 Base.metadata.create_all(bind=engine)

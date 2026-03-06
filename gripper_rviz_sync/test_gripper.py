@@ -19,7 +19,7 @@ def test_modbus_connection():
     connected = client.connect()
     
     if connected:
-        print("✅ 연결 성공!")
+        print(" 연결 성공!")
         
         # Read gripper state
         result = client.read_holding_registers(267, 1, unit=65)
@@ -35,7 +35,7 @@ def test_modbus_connection():
         client.close()
         return True
     else:
-        print("❌ 연결 실패!")
+        print(" 연결 실패!")
         return False
 
 
@@ -51,7 +51,7 @@ def test_gripper_movement():
     client.connect()
     
     # Open gripper (80mm)
-    print("🔓 그리퍼 열기 (80mm)...")
+    print(" 그리퍼 열기 (80mm)...")
     client.write_register(0, 200, unit=65)  # Force: 20N
     client.write_register(1, 800, unit=65)  # Width: 80mm
     client.write_register(2, 1, unit=65)    # Command
@@ -62,7 +62,7 @@ def test_gripper_movement():
         print(f"   결과: {result.registers[0] / 10.0} mm")
     
     # Close gripper (10mm)
-    print("🔒 그리퍼 닫기 (10mm)...")
+    print(" 그리퍼 닫기 (10mm)...")
     client.write_register(0, 200, unit=65)  # Force: 20N
     client.write_register(1, 100, unit=65)  # Width: 10mm
     client.write_register(2, 1, unit=65)    # Command
@@ -73,7 +73,7 @@ def test_gripper_movement():
         print(f"   결과: {result.registers[0] / 10.0} mm")
     
     client.close()
-    print("✅ 테스트 완료!")
+    print(" 테스트 완료!")
     return True
 
 
@@ -129,7 +129,7 @@ def test_ros2_node():
     node.destroy_node()
     rclpy.shutdown()
     
-    print("✅ ROS2 노드 테스트 완료!")
+    print(" ROS2 노드 테스트 완료!")
     return True
 
 

@@ -179,10 +179,10 @@ class CollisionRecoveryWebNode(Node):
     def get_robot_state(self) -> int | None:
         """로봇 상태 조회"""
         if not HAS_DSR:
-            self._log("⚠️ dsr_msgs2 없음")
+            self._log(" dsr_msgs2 없음")
             return None
         if not self._wait_for(self.state_client, 3.0):
-            self._log("⚠️ get_robot_state 서비스 없음 - bringup 실행 확인")
+            self._log(" get_robot_state 서비스 없음 - bringup 실행 확인")
             return None
         
         req = GetRobotState.Request()
@@ -226,7 +226,7 @@ class CollisionRecoveryWebNode(Node):
         """Z축 위로 Jog - 충돌 위치에서 벗어나기"""
         self._log("Jog 서비스 확인 중...")
         if not HAS_DSR or not self._wait_for(self.jog_client, 1.0):
-            self._log("⚠️ Jog 서비스 없음")
+            self._log(" Jog 서비스 없음")
             return False
         
         # Jog 시작 요청
@@ -238,7 +238,7 @@ class CollisionRecoveryWebNode(Node):
         self._log(f"Jog 시작: Z축 위로 {duration}초, 속도 30%...")
         res = self._call_sync(self.jog_client, req)
         if res and res.success:
-            self._log("✓ Jog 명령 전송 성공")
+            self._log(" Jog 명령 전송 성공")
             time.sleep(duration)
             
             # 정지 - 새 요청 객체 사용
@@ -249,13 +249,13 @@ class CollisionRecoveryWebNode(Node):
             
             stop_res = self._call_sync(self.jog_client, stop_req)
             if stop_res and stop_res.success:
-                self._log("✓ Jog 정지")
+                self._log(" Jog 정지")
             else:
-                self._log("⚠️ Jog 정지 실패 (자연 정지 대기)")
+                self._log(" Jog 정지 실패 (자연 정지 대기)")
                 time.sleep(0.5)  # 자연 정지 대기
             return True
         else:
-            self._log("⚠️ Jog 명령 실패 - RECOVERY 모드 확인 필요")
+            self._log(" Jog 명령 실패 - RECOVERY 모드 확인 필요")
             return False
     
     def complete_recovery(self) -> bool:
@@ -280,7 +280,7 @@ class CollisionRecoveryWebNode(Node):
     def servo_on(self) -> bool:
         """Servo ON"""
         if not HAS_DSR or not self._wait_for(self.control_client, 5.0):
-            self._log("⚠️ set_robot_control 서비스 없음")
+            self._log(" set_robot_control 서비스 없음")
             return False
         req = SetRobotControl.Request()
         req.robot_control = CONTROL_SERVO_ON
@@ -290,15 +290,15 @@ class CollisionRecoveryWebNode(Node):
     def set_autonomous_mode(self) -> bool:
         """자동 모드 설정"""
         if not HAS_DSR or not self._wait_for(self.mode_client, 5.0):
-            self._log("⚠️ set_robot_mode 서비스 없음")
+            self._log(" set_robot_mode 서비스 없음")
             return False
         req = SetRobotMode.Request()
         req.robot_mode = 1
         res = self._call_sync(self.mode_client, req)
         if res and res.success:
-            self._log("✓ 자동 모드 설정됨")
+            self._log(" 자동 모드 설정됨")
             return True
-        self._log("✗ 자동 모드 설정 실패")
+        self._log(" 자동 모드 설정 실패")
         return False
     
     # ========================================
@@ -313,7 +313,7 @@ class CollisionRecoveryWebNode(Node):
             return False
         
         if not HAS_DSR or not self._wait_for(self.move_joint_client, 5.0):
-            self._log("⚠️ move_joint 서비스 없음")
+            self._log(" move_joint 서비스 없음")
             return False
         
         req = MoveJoint.Request()
@@ -328,30 +328,30 @@ class CollisionRecoveryWebNode(Node):
         
         res = self._call_sync(self.move_joint_client, req, 5.0)
         if res and res.success:
-            self._log("✓ 홈 이동 명령 전송")
+            self._log(" 홈 이동 명령 전송")
             # 모션 완료 대기 (MOVING → STANDBY)
             for i in range(100):  # 최대 10초 대기
                 time.sleep(0.1)
                 state = self.get_robot_state()
                 if state == 1:  # STANDBY
-                    self._log("✓ 홈 위치 도착")
+                    self._log(" 홈 위치 도착")
                     return True
                 elif state in (5, 9):  # SAFE_STOP - 충돌 발생
-                    self._log("⚠️ 홈 이동 중 충돌 발생")
+                    self._log(" 홈 이동 중 충돌 발생")
                     return False
-            self._log("⚠️ 홈 이동 타임아웃")
+            self._log(" 홈 이동 타임아웃")
             return False
-        self._log("✗ 홈 이동 실패")
+        self._log(" 홈 이동 실패")
         return False
     
     def move_down(self, fast: bool = False) -> bool:
         """바닥 방향 이동 (충돌 테스트)"""
         if fast:
-            self._log("⚠️ 충돌 테스트 - 빠른 이동")
+            self._log(" 충돌 테스트 - 빠른 이동")
             pos = [0.0, 45.0, 45.0, 0.0, 90.0, 0.0]
             vel = 20.0
         else:
-            self._log("⚠️ 충돌 테스트 - 느린 이동")
+            self._log(" 충돌 테스트 - 느린 이동")
             pos = [0.0, 60.0, 30.0, 0.0, 90.0, 0.0]
             vel = 10.0
         
@@ -360,7 +360,7 @@ class CollisionRecoveryWebNode(Node):
             return False
         
         if not HAS_DSR or not self._wait_for(self.move_joint_client, 5.0):
-            self._log("⚠️ move_joint 서비스 없음")
+            self._log(" move_joint 서비스 없음")
             return False
         
         req = MoveJoint.Request()
@@ -375,9 +375,9 @@ class CollisionRecoveryWebNode(Node):
         
         res = self._call_sync(self.move_joint_client, req, 10.0)
         if res and res.success:
-            self._log("✓ 모션 명령 전송됨")
+            self._log(" 모션 명령 전송됨")
             return True
-        self._log("✗ 모션 명령 실패")
+        self._log(" 모션 명령 실패")
         return False
     
     def _start_collision_test(self, fast: bool = False):
@@ -409,14 +409,14 @@ class CollisionRecoveryWebNode(Node):
                 # 홈 이동 (최대 3번 재시도)
                 for retry in range(3):
                     if self.move_home():
-                        self._log("✅ 충돌 테스트 완료!")
+                        self._log(" 충돌 테스트 완료!")
                         return
                     self._log(f"홈 이동 재시도... ({retry+1}/3)")
                     time.sleep(1.0)
                 
-                self._log("⚠️ 홈 이동 실패 - 수동 조작 필요")
+                self._log(" 홈 이동 실패 - 수동 조작 필요")
             else:
-                self._log("⚠️ 복구 실패")
+                self._log(" 복구 실패")
         
         # 별도 쓰레드에서 실행 (타이머 콜백 블로킹 방지)
         thread = threading.Thread(target=collision_test_thread, daemon=True)
@@ -443,7 +443,7 @@ class CollisionRecoveryWebNode(Node):
             self._log(f"[시도 {attempt+1}/5] 상태: {state_name}")
             
             if self.is_standby(state):
-                self._log("✅ 이미 STANDBY 상태!")
+                self._log(" 이미 STANDBY 상태!")
                 self.is_recovering = False
                 return True
             
@@ -451,12 +451,12 @@ class CollisionRecoveryWebNode(Node):
             if self.is_safe_stop(state):
                 self._log("노란 링(SAFE_STOP) 감지!")
                 if self.reset_safe_stop():
-                    self._log("✓ SAFE_STOP 리셋")
+                    self._log(" SAFE_STOP 리셋")
                 time.sleep(0.5)
             
             # 2. RECOVERY 진입
             if self.enter_recovery_mode():
-                self._log("✓ RECOVERY 모드 진입")
+                self._log(" RECOVERY 모드 진입")
             time.sleep(0.5)  # RECOVERY 모드 안정화 대기 (0.3 → 0.5)
             
             # 3. Jog 위로 (충돌 위치에서 충분히 벗어나기)
@@ -468,32 +468,32 @@ class CollisionRecoveryWebNode(Node):
             
             # 4. RECOVERY 완료
             if self.complete_recovery():
-                self._log("✓ RECOVERY 완료")
+                self._log(" RECOVERY 완료")
             time.sleep(0.5)
             
             # 5. RECOVERY 해제
             if self.exit_recovery_mode():
-                self._log("✓ RECOVERY 모드 해제")
+                self._log(" RECOVERY 모드 해제")
             time.sleep(0.5)
             
             # 6. Servo ON
             state = self.get_robot_state()
             if state != 1:
                 if self.servo_on():
-                    self._log("✓ Servo ON")
+                    self._log(" Servo ON")
                 time.sleep(1.0)
             
             # 결과 확인
             state = self.get_robot_state()
             if self.is_standby(state):
-                self._log("✅ 복구 성공! STANDBY 상태")
+                self._log(" 복구 성공! STANDBY 상태")
                 self.is_recovering = False
                 return True
             
             self._log("재시도...")
             time.sleep(0.5)
         
-        self._log("⚠️ 복구 실패")
+        self._log(" 복구 실패")
         self.is_recovering = False
         return False
     
@@ -549,7 +549,7 @@ class CollisionRecoveryWebNode(Node):
                 
             elif command == 'monitor_start':
                 self.is_monitoring = True
-                self._log("🔍 모니터링 모드 시작 - SAFE_STOP 시 자동 복구")
+                self._log(" 모니터링 모드 시작 - SAFE_STOP 시 자동 복구")
                 
             elif command == 'monitor_stop':
                 self.is_monitoring = False

@@ -90,10 +90,10 @@ class MotionController:
         
         res = self._call(self.mode_client, req, "SetRobotMode")
         if res and res.success:
-            self.log("✓ 자동 모드 설정 완료")
+            self.log(" 자동 모드 설정 완료")
             return True
         
-        self.log("✗ 자동 모드 설정 실패")
+        self.log(" 자동 모드 설정 실패")
         return False
     
     # ========================================
@@ -132,10 +132,10 @@ class MotionController:
         res = self._call(self.move_joint_client, req, "MoveJoint", timeout=30.0)
         
         if res and res.success:
-            self.log("✓ 홈 위치 도착 완료!")
+            self.log(" 홈 위치 도착 완료!")
             return True
         else:
-            self.log("✗ 홈 이동 실패")
+            self.log(" 홈 이동 실패")
             return False
     
     def move_down_slow(self) -> bool:
@@ -145,7 +145,7 @@ class MotionController:
         J2=60°, J3=30° → 팔이 아래로 많이 숙여짐
         속도 10%로 천천히 이동
         """
-        self.log("⚠️  충돌 테스트 - 바닥 방향으로 천천히 이동...")
+        self.log("  충돌 테스트 - 바닥 방향으로 천천히 이동...")
         
         if not self.set_autonomous_mode():
             return False
@@ -165,7 +165,7 @@ class MotionController:
         req.sync_type = 1  # 비동기 (충돌 감지를 위해)
         
         self.log("바닥 방향으로 천천히 이동 (J2=60°, J3=30°)")
-        self.log("⚠️  바닥에 닿으면 SAFE_STOP 발생!")
+        self.log("  바닥에 닿으면 SAFE_STOP 발생!")
         
         res = self._call(self.move_joint_client, req, "MoveJoint", timeout=5.0)
         
@@ -181,7 +181,7 @@ class MotionController:
         J2=45°, J3=45° → 팔이 아래로 숙여짐
         속도 20%
         """
-        self.log("⚠️  충돌 테스트 - 바닥 방향으로 빠르게 이동...")
+        self.log("  충돌 테스트 - 바닥 방향으로 빠르게 이동...")
         
         if not self.set_autonomous_mode():
             return False
@@ -201,7 +201,7 @@ class MotionController:
         req.sync_type = 1  # 비동기
         
         self.log("바닥 방향으로 빠르게 이동 (J2=45°, J3=45°)")
-        self.log("⚠️  바닥에 닿으면 SAFE_STOP 발생!")
+        self.log("  바닥에 닿으면 SAFE_STOP 발생!")
         
         res = self._call(self.move_joint_client, req, "MoveJoint", timeout=5.0)
         

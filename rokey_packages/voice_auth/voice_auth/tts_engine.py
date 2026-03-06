@@ -45,12 +45,12 @@ class TTSEngine:
                 try:
                     from elevenlabs.client import ElevenLabs
                     self._client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
-                    print(f"✅ ElevenLabs TTS 초기화 완료 (voice: {self.voice_id})")
+                    print(f" ElevenLabs TTS 초기화 완료 (voice: {self.voice_id})")
                 except Exception as e:
-                    print(f"⚠️ ElevenLabs 초기화 실패: {e}, pyttsx3로 fallback")
+                    print(f" ElevenLabs 초기화 실패: {e}, pyttsx3로 fallback")
                     self.engine_type = "pyttsx3"
             else:
-                print("⚠️ ELEVENLABS_API_KEY 없음, pyttsx3로 fallback")
+                print(" ELEVENLABS_API_KEY 없음, pyttsx3로 fallback")
                 self.engine_type = "pyttsx3"
     
     @classmethod
@@ -63,7 +63,7 @@ class TTSEngine:
     
     def speak(self, text: str) -> bool:
         """텍스트를 음성으로 변환하여 재생"""
-        print(f"🔊 TTS [{self.engine_type}]: \"{text}\"")
+        print(f" TTS [{self.engine_type}]: \"{text}\"")
         
         try:
             if self.engine_type == "elevenlabs":
@@ -73,7 +73,7 @@ class TTSEngine:
             else:
                 return self._speak_pyttsx3(text)
         except Exception as e:
-            print(f"❌ TTS 오류 ({self.engine_type}): {e}")
+            print(f" TTS 오류 ({self.engine_type}): {e}")
             # Fallback to pyttsx3
             if self.engine_type != "pyttsx3":
                 print("→ pyttsx3로 fallback")

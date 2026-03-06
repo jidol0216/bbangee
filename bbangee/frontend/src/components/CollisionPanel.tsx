@@ -66,7 +66,7 @@ export default function CollisionPanel() {
   return (
     <div className="panel collision-panel-compact">
       <div className="panel-header">
-        <span className="panel-title">🛡️ 충돌복구</span>
+        <span className="panel-title"> 충돌복구</span>
         <span className={`panel-tag ${nodeRunning ? 'online' : 'offline'}`}>
           {nodeRunning ? 'ON' : 'OFF'}
         </span>
@@ -84,7 +84,7 @@ export default function CollisionPanel() {
             disabled={loading || state?.is_recovering}
             title="자동 복구 실행"
           >
-            {state?.is_recovering ? '🔄' : '🔧'} 복구
+            {state?.is_recovering ? '' : ''} 복구
           </button>
         </div>
 
@@ -101,7 +101,7 @@ export default function CollisionPanel() {
             disabled={loading || state?.is_recovering}
             title="느린 충돌 테스트"
           >
-            🐢
+            
           </button>
           <button
             className="btn-collision-sm btn-test-fast"
@@ -113,7 +113,7 @@ export default function CollisionPanel() {
             disabled={loading || state?.is_recovering}
             title="빠른 충돌 테스트"
           >
-            🐇
+            
           </button>
         </div>
 

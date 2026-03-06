@@ -66,7 +66,7 @@ class CalibrationVerifier(Node):
         self.timer = self.create_timer(0.033, self.process_loop)
         
         self.get_logger().info("=" * 60)
-        self.get_logger().info("🎯 캘리브레이션 검증 도구")
+        self.get_logger().info(" 캘리브레이션 검증 도구")
         self.get_logger().info("=" * 60)
         self.get_logger().info("체커보드를 카메라 앞에 놓으세요")
         self.get_logger().info("체커보드 중심의 베이스 좌표를 계산합니다")
@@ -191,7 +191,7 @@ class CalibrationVerifier(Node):
                     
                     # 콘솔에도 출력
                     self.get_logger().info(
-                        f"📍 베이스 좌표: X={center_base[0]:.1f}mm, Y={center_base[1]:.1f}mm, Z={center_base[2]:.1f}mm"
+                        f" 베이스 좌표: X={center_base[0]:.1f}mm, Y={center_base[1]:.1f}mm, Z={center_base[2]:.1f}mm"
                     )
                 else:
                     cv2.putText(vis_img, "Base Frame: TF not available", (10, 120),

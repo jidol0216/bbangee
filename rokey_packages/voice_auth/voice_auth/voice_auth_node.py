@@ -319,12 +319,12 @@ class VoiceAuthNode(Node):
                 self._current_status = self.STATUS_SUCCESS
                 response.success = True
                 response.message = "암구호 인증 성공"
-                self.get_logger().info(f'✅ {response.message}')
+                self.get_logger().info(f' {response.message}')
             else:
                 self._current_status = self.STATUS_FAILED
                 response.success = False
                 response.message = f"암구호 불일치 (인식: {recognized})"
-                self.get_logger().warn(f'❌ {response.message}')
+                self.get_logger().warn(f' {response.message}')
             
             response.recognized_text = recognized
             return response

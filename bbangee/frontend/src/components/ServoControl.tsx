@@ -131,12 +131,12 @@ export default function ServoControl() {
   };
 
   // ===========================
-  // 🔥 레이저 제어
+  //  레이저 제어
   // ===========================
   const sendLaserCommand = async (target: "on" | "off") => {
     setLoadingLaser(true);
     try {
-      await api.post("/device/laser", { target }); // 👉 laser 엔드포인트
+      await api.post("/device/laser", { target }); //  laser 엔드포인트
       setLaserState(target);
     } catch (e) {
       console.error(e);
@@ -201,7 +201,7 @@ export default function ServoControl() {
             }}
             title="ESP32 연결 재시도 및 초기화"
           >
-            {resetting ? '⏳' : '🔄'} {esp32Status.connected ? '리셋' : '재연결'}
+            {resetting ? '⏳' : ''} {esp32Status.connected ? '리셋' : '재연결'}
           </button>
         </div>
         
@@ -215,7 +215,7 @@ export default function ServoControl() {
             fontSize: '11px',
             color: '#ffa500'
           }}>
-            ⚠️ ESP32 연결 실패 {esp32Status.fail_count}회<br/>
+             ESP32 연결 실패 {esp32Status.fail_count}회<br/>
             <span style={{fontSize: '10px', color: '#888'}}>
               아두이노 전원을 확인하거나 재부팅해주세요
             </span>
@@ -228,7 +228,7 @@ export default function ServoControl() {
           <span className={`servo-state servo-state-${state}`}>
             {state.toUpperCase()}
           </span>
-          {servoAuto && <span style={{marginLeft: 8, color: '#37ff9f', fontSize: 11}}>🤖 AUTO</span>}
+          {servoAuto && <span style={{marginLeft: 8, color: '#37ff9f', fontSize: 11}}> AUTO</span>}
         </div>
         <div className="servo-buttons">
           <button
@@ -259,7 +259,7 @@ export default function ServoControl() {
               style={{width: 16, height: 16}}
             />
             <span style={{fontSize: 12, color: servoAuto ? '#37ff9f' : '#888'}}>
-              🤖 얼굴 감지 → 서보 자동 ON/OFF
+               얼굴 감지 → 서보 자동 ON/OFF
             </span>
           </label>
         </div>
@@ -272,7 +272,7 @@ export default function ServoControl() {
           <span className={`servo-state servo-state-${laserState}`}>
             {laserState.toUpperCase()}
           </span>
-          {laserAuto && <span style={{marginLeft: 8, color: '#ff6b6b', fontSize: 11}}>🤖 AUTO</span>}
+          {laserAuto && <span style={{marginLeft: 8, color: '#ff6b6b', fontSize: 11}}> AUTO</span>}
         </div>
         <div className="servo-buttons">
           <button
@@ -303,7 +303,7 @@ export default function ServoControl() {
               style={{width: 16, height: 16}}
             />
             <span style={{fontSize: 12, color: laserAuto ? '#ff6b6b' : '#888'}}>
-              🎯 얼굴 감지 → 레이저 자동 ON/OFF
+               얼굴 감지 → 레이저 자동 ON/OFF
             </span>
           </label>
         </div>
@@ -311,7 +311,7 @@ export default function ServoControl() {
         {/* 자동 모드 안내 */}
         {(laserAuto || servoAuto) && (
           <div style={{marginTop: 12, padding: 8, background: 'rgba(255,255,255,0.05)', borderRadius: 6, fontSize: 11, color: '#aaa'}}>
-            ⚡ 자동 모드: 얼굴 감지 시 ON, {timeout}초 미감지 시 OFF
+             자동 모드: 얼굴 감지 시 ON, {timeout}초 미감지 시 OFF
           </div>
         )}
         

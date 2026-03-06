@@ -152,7 +152,7 @@ def main(args=None):
         print("\n옵션을 선택하세요:")
         print("  1. 현재 상태 확인 및 복구")
         print("  2. 충돌 테스트 - 빠른 이동 (J2=45°, J3=45°)")
-        print("  3. 충돌 테스트 - 천천히 이동 (J2=60°, J3=30°) ★추천")
+        print("  3. 충돌 테스트 - 천천히 이동 (J2=60°, J3=30°) 추천")
         print("  4. 상태 모니터링 모드 (수동 충돌)")
         print("  q. 종료")
         print()
@@ -161,7 +161,7 @@ def main(args=None):
         
         if choice in ['1', '2', '3', '4']:
             if choice in ['2', '3']:
-                print("\n⚠️  주의: 로봇이 움직입니다!")
+                print("\n  주의: 로봇이 움직입니다!")
                 print("안전 확인 후 Enter를 누르세요...")
                 input()
             run_demo(node, choice)

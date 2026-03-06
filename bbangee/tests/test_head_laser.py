@@ -45,7 +45,7 @@ class HeadLaserTest(Node):
         # 타이머 (레이저 OFF 체크)
         self.timer = self.create_timer(0.1, self.check_timeout)
         
-        self.get_logger().info('🎯 Head → Laser Test Node 시작!')
+        self.get_logger().info(' Head → Laser Test Node 시작!')
         self.get_logger().info(f'   API: {"Backend" if self.use_backend else "ESP32 Direct"}')
         self.get_logger().info('   토픽: /face_detection/faces')
         self.get_logger().info('   Timeout: %.1f초' % self.timeout)
@@ -73,7 +73,7 @@ class HeadLaserTest(Node):
                 )
             
             self.laser_on = on
-            status = "🔴 ON" if on else "⚫ OFF"
+            status = " ON" if on else " OFF"
             self.get_logger().info(f'레이저 {status}')
             
         except Exception as e:
@@ -87,7 +87,7 @@ class HeadLaserTest(Node):
             self.last_detection_time = time.time()
             
             if not self.laser_on:
-                self.get_logger().info(f'👤 얼굴 감지! ({cx:.0f}, {cy:.0f})')
+                self.get_logger().info(f' 얼굴 감지! ({cx:.0f}, {cy:.0f})')
                 self.set_laser(True)
     
     def check_timeout(self):
@@ -95,7 +95,7 @@ class HeadLaserTest(Node):
         if self.laser_on:
             elapsed = time.time() - self.last_detection_time
             if elapsed > self.timeout:
-                self.get_logger().info('👻 얼굴 미감지 (timeout)')
+                self.get_logger().info(' 얼굴 미감지 (timeout)')
                 self.set_laser(False)
 
 
@@ -106,8 +106,8 @@ def main(args=None):
     print("\n" + "="*50)
     print("   얼굴 감지 → 레이저 제어 테스트")
     print("="*50)
-    print("  - 얼굴 감지: 레이저 ON 🔴")
-    print("  - 1초 미감지: 레이저 OFF ⚫")
+    print("  - 얼굴 감지: 레이저 ON ")
+    print("  - 1초 미감지: 레이저 OFF ")
     print("  - Ctrl+C로 종료")
     print("="*50 + "\n")
     

@@ -57,7 +57,7 @@ class ImageFlipNode(Node):
         self.depth_pub = self.create_publisher(Image, output_depth, 10)
         self.info_pub = self.create_publisher(CameraInfo, output_info, 10)
         
-        self.get_logger().info('🔄 Image Flip Node started')
+        self.get_logger().info(' Image Flip Node started')
         self.get_logger().info(f'   Color: {input_color} → {output_color}')
         self.get_logger().info(f'   Depth: {input_depth} → {output_depth}')
     

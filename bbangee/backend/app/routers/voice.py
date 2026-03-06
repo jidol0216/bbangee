@@ -106,7 +106,7 @@ def _submit_to_scenario(password: str) -> dict:
         loop = asyncio.new_event_loop()
         result = loop.run_until_complete(scenario_manager.submit_password(password))
         loop.close()
-        print(f"🎯 시나리오 암구호 제출: '{password}' → {result}")
+        print(f" 시나리오 암구호 제출: '{password}' → {result}")
         return result
     except Exception as e:
         print(f"시나리오 암구호 제출 실패: {e}")
@@ -129,7 +129,7 @@ def _run_auth(timeout_sec: float, voice_id: str, is_scenario: bool = False):
 
         # 1. TTS 질문
         tag = "[시나리오]" if is_scenario else "[보이스패널]"
-        print(f"🔊 {tag} TTS 시작: 암구호! {question}!", flush=True)
+        print(f" {tag} TTS 시작: 암구호! {question}!", flush=True)
         tts_service.speak(f"암구호! {question}!", voice_id)
         time.sleep(1.0)
 
@@ -149,7 +149,7 @@ def _run_auth(timeout_sec: float, voice_id: str, is_scenario: bool = False):
 
         # 5. STT
         recognized = audio_service.speech_to_text(audio_data, rate=sample_rate)
-        print(f"📝 {tag} 인식된 텍스트: '{recognized}'", flush=True)
+        print(f" {tag} 인식된 텍스트: '{recognized}'", flush=True)
 
         with _state_lock:
             auth_state["recognized_text"] = recognized
@@ -158,7 +158,7 @@ def _run_auth(timeout_sec: float, voice_id: str, is_scenario: bool = False):
         if recognized.strip():
             _submit_to_scenario(recognized.strip())
         else:
-            print(f"⚠️ {tag} 인식된 텍스트 없음 - 제출 건너뜀", flush=True)
+            print(f" {tag} 인식된 텍스트 없음 - 제출 건너뜀", flush=True)
 
         # 7. 로컬 비교
         is_match = audio_service.check_passphrase(recognized, answer)
@@ -176,7 +176,7 @@ def _run_auth(timeout_sec: float, voice_id: str, is_scenario: bool = False):
             _save_state()
 
         if is_scenario:
-            print("🔓 [시나리오] 음성 인증 완료, 보이스 패널 락 해제", flush=True)
+            print(" [시나리오] 음성 인증 완료, 보이스 패널 락 해제", flush=True)
 
     except Exception as e:
         print(f"인증 프로세스 오류: {e}")

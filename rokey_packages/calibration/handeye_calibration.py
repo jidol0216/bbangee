@@ -140,7 +140,7 @@ def calibrate_camera_from_chessboard(image_paths, board_size, square_size):
     for fname in image_paths:
         img = cv2.imread(fname)
         if img is None:
-            print(f"  ⚠️ 이미지 로드 실패: {fname}")
+            print(f"   이미지 로드 실패: {fname}")
             continue
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         if image_shape is None:
@@ -155,20 +155,20 @@ def calibrate_camera_from_chessboard(image_paths, board_size, square_size):
             obj_points.append(objp)
             img_points.append(corners_sub)
         else:
-            print(f"  ⚠️ 체커보드 검출 실패: {fname}")
+            print(f"   체커보드 검출 실패: {fname}")
 
     if len(obj_points) < 3:
-        print("❌ 체커보드 검출된 이미지가 3장 미만입니다!")
+        print(" 체커보드 검출된 이미지가 3장 미만입니다!")
         return None, None, None, None
 
-    print(f"  ✅ 체커보드 검출 성공: {len(obj_points)}장")
+    print(f"   체커보드 검출 성공: {len(obj_points)}장")
 
     ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(
         obj_points, img_points, image_shape, None, None
     )
 
     if not ret:
-        print("❌ 카메라 캘리브레이션 실패!")
+        print(" 카메라 캘리브레이션 실패!")
         return None, None, None, None
 
     return camera_matrix, dist_coeffs, rvecs, tvecs
@@ -176,13 +176,13 @@ def calibrate_camera_from_chessboard(image_paths, board_size, square_size):
 
 def main():
     print("=" * 60)
-    print("🎯 Eye-on-Hand Calibration")
+    print(" Eye-on-Hand Calibration")
     print("=" * 60)
     
     # 데이터 로드
     data_path = "data/calibrate_data.json"
     if not os.path.exists(data_path):
-        print(f"❌ 데이터 파일 없음: {data_path}")
+        print(f" 데이터 파일 없음: {data_path}")
         print("   먼저 data_recording_ros2.py로 데이터를 수집하세요.")
         return
     
@@ -190,11 +190,11 @@ def main():
     robot_poses = np.array(data["poses"])
     image_paths = ["data/" + d for d in data["file_name"]]
     
-    print(f"\n📂 데이터 로드: {len(robot_poses)}장")
+    print(f"\n 데이터 로드: {len(robot_poses)}장")
     print(f"   체커보드: {CHECKERBOARD_SIZE[0]}x{CHECKERBOARD_SIZE[1]}, {SQUARE_SIZE}mm")
     
     # 1. RealSense 카메라 intrinsic 사용 (체커보드로 재계산하지 않음)
-    print("\n📷 1단계: RealSense 카메라 intrinsic 사용")
+    print("\n 1단계: RealSense 카메라 intrinsic 사용")
     camera_matrix = REALSENSE_INTRINSIC.copy()
     dist_coeffs = REALSENSE_DIST_COEFFS.copy()
     
@@ -203,7 +203,7 @@ def main():
     print(f"   distortion: {dist_coeffs.tolist()}")
     
     # 2. Hand-Eye 데이터 수집
-    print("\n🤖 2단계: Hand-Eye 변환 데이터 수집...")
+    print("\n 2단계: Hand-Eye 변환 데이터 수집...")
     R_gripper2base_list = []
     t_gripper2base_list = []
     R_target2cam_list = []
@@ -224,7 +224,7 @@ def main():
             image, CHECKERBOARD_SIZE, SQUARE_SIZE, camera_matrix, dist_coeffs
         )
         if R_target2cam is None:
-            print(f"  ⚠️ [{idx+1}] 체커보드 검출 실패: {img_path}")
+            print(f"   [{idx+1}] 체커보드 검출 실패: {img_path}")
             continue
         
         # OpenCV 입력 형식에 맞게 저장
@@ -237,14 +237,14 @@ def main():
     print(f"   유효 데이터: {valid_count}장")
     
     if valid_count < 3:
-        print("❌ 유효 데이터가 3장 미만입니다! 최소 3장 필요.")
+        print(" 유효 데이터가 3장 미만입니다! 최소 3장 필요.")
         return
     
     if valid_count < 15:
-        print(f"⚠️ 데이터가 적습니다. 30장 이상 권장 (현재 {valid_count}장)")
+        print(f" 데이터가 적습니다. 30장 이상 권장 (현재 {valid_count}장)")
     
     # 3. Hand-Eye 캘리브레이션
-    print("\n🔧 3단계: Hand-Eye 캘리브레이션 계산...")
+    print("\n 3단계: Hand-Eye 캘리브레이션 계산...")
     print("   방법: CALIB_HAND_EYE_PARK")
     
     R_cam2gripper, t_cam2gripper = cv2.calibrateHandEye(
@@ -258,8 +258,8 @@ def main():
     # Rotation determinant 확인 및 수정
     det = np.linalg.det(R_cam2gripper)
     if det < 0:
-        print(f"   ⚠️ Rotation determinant = {det:.4f} (반사 포함)")
-        print(f"   ⚠️ SVD로 가장 가까운 proper rotation matrix로 변환...")
+        print(f"    Rotation determinant = {det:.4f} (반사 포함)")
+        print(f"    SVD로 가장 가까운 proper rotation matrix로 변환...")
         # SVD를 사용하여 가장 가까운 proper rotation matrix로 변환
         U, S, Vt = np.linalg.svd(R_cam2gripper)
         R_cam2gripper = U @ Vt
@@ -267,7 +267,7 @@ def main():
         if np.linalg.det(R_cam2gripper) < 0:
             U[:, -1] *= -1
             R_cam2gripper = U @ Vt
-        print(f"   ✅ 수정된 determinant = {np.linalg.det(R_cam2gripper):.6f}")
+        print(f"    수정된 determinant = {np.linalg.det(R_cam2gripper):.6f}")
     
     # T_gripper2camera 구성 (= T_cam2gripper = ^g T_c)
     # 이 행렬은 카메라 좌표를 그리퍼 좌표로 변환: P_gripper = T @ P_camera
@@ -277,11 +277,11 @@ def main():
     
     # 4. 결과 출력 및 검증
     print("\n" + "=" * 60)
-    print("📊 캘리브레이션 결과")
+    print(" 캘리브레이션 결과")
     print("=" * 60)
     
     t = T_gripper2camera[:3, 3]
-    print(f"\n🎯 T_gripper2camera (카메라→그리퍼 변환)")
+    print(f"\n T_gripper2camera (카메라→그리퍼 변환)")
     print(f"   Translation:")
     print(f"     X = {t[0]:.2f} mm")
     print(f"     Y = {t[1]:.2f} mm")
@@ -289,46 +289,46 @@ def main():
     print(f"     거리 = {np.linalg.norm(t):.2f} mm")
     
     # 5. 유효성 검사
-    print(f"\n🔍 유효성 검사:")
+    print(f"\n 유효성 검사:")
     
     # Rotation matrix 검증
     det = np.linalg.det(R_cam2gripper)
     print(f"   Rotation determinant: {det:.6f} (정상: ~1.0)")
     
     is_orthogonal = np.allclose(R_cam2gripper @ R_cam2gripper.T, np.eye(3), atol=1e-5)
-    print(f"   Rotation orthogonality: {'✅ 정상' if is_orthogonal else '❌ 비정상'}")
+    print(f"   Rotation orthogonality: {' 정상' if is_orthogonal else ' 비정상'}")
     
     # 거리 검증 (Eye-on-Hand: 보통 50-300mm)
     dist = np.linalg.norm(t)
     if 30 < dist < 500:
-        print(f"   거리 범위: ✅ 합리적 ({dist:.1f}mm)")
+        print(f"   거리 범위:  합리적 ({dist:.1f}mm)")
     else:
-        print(f"   거리 범위: ⚠️ 확인 필요 ({dist:.1f}mm)")
+        print(f"   거리 범위:  확인 필요 ({dist:.1f}mm)")
     
     # 6. 저장
     output_path = "T_gripper2camera.npy"
     np.save(output_path, T_gripper2camera)
-    print(f"\n💾 저장 완료: {os.path.abspath(output_path)}")
+    print(f"\n 저장 완료: {os.path.abspath(output_path)}")
     
     # 기존 캘리브레이션 위치에도 복사
     target_path = "/home/rokey/ros2_ws/src/archive/face_tracking_pkg/day1/2_calibration/T_gripper2camera.npy"
     try:
         np.save(target_path, T_gripper2camera)
-        print(f"💾 복사 완료: {target_path}")
+        print(f" 복사 완료: {target_path}")
     except Exception as e:
-        print(f"⚠️ 복사 실패: {e}")
+        print(f" 복사 실패: {e}")
     
     print("\n" + "=" * 60)
-    print("✅ 캘리브레이션 완료!")
+    print(" 캘리브레이션 완료!")
     print("=" * 60)
     
     # 전체 행렬 출력
-    print("\n📐 Full T_gripper2camera matrix:")
+    print("\n Full T_gripper2camera matrix:")
     print(T_gripper2camera)
     
     # 사용법 안내
     print("\n" + "=" * 60)
-    print("📖 사용법")
+    print(" 사용법")
     print("=" * 60)
     print("""
 카메라 좌표 → 로봇 베이스 좌표 변환:

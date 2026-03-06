@@ -20,12 +20,12 @@ export async function fetchLogsBySerial(serial: string): Promise<AccessLog[]> {
     const res = await api.get(`/access/logs/${serial}`);
     return res.data;
 }
-// ✔ 군번으로 ENTRY 기록 생성
+//  군번으로 ENTRY 기록 생성
 export async function recordIn(serial: string) {
   return api.post(`/access/${serial}/entry`);
 }
 
-// ✔ 군번으로 EXIT 기록 업데이트
+//  군번으로 EXIT 기록 업데이트
 export async function recordOut(serial: string) {
   return api.post(`/access/${serial}/exit`);
 }

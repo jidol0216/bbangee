@@ -34,7 +34,7 @@ cleanup() {
     pkill -f "collision_recovery" 2>/dev/null
     pkill -f "image_flip_node" 2>/dev/null
     
-    echo -e "${GREEN}✅ 종료 완료!${NC}"
+    echo -e "${GREEN} 종료 완료!${NC}"
     exit 0
 }
 
@@ -44,10 +44,10 @@ source /opt/ros/humble/setup.bash
 source /home/rokey/ros2_ws/install/setup.bash
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  🤖 ROS2 노드 시작 (웹 제외)${NC}"
+echo -e "${GREEN}   ROS2 노드 시작 (웹 제외)${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "${YELLOW}⚠️  로봇/카메라는 이미 실행되어 있어야 합니다!${NC}"
+echo -e "${YELLOW}  로봇/카메라는 이미 실행되어 있어야 합니다!${NC}"
 echo ""
 
 # Image Flip
@@ -108,10 +108,10 @@ sleep 1
 
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  ✅ ROS2 노드 실행 완료!${NC}"
+echo -e "${GREEN}   ROS2 노드 실행 완료!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "${YELLOW}  ⏹️  Ctrl+C 를 누르면 종료됩니다${NC}"
+echo -e "${YELLOW}  ⏹  Ctrl+C 를 누르면 종료됩니다${NC}"
 echo ""
 
 while true; do

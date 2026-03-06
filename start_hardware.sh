@@ -33,7 +33,7 @@ cleanup() {
     pkill -f "gripper_controller" 2>/dev/null
     pkill -f "joint_state_merger" 2>/dev/null
     
-    echo -e "${GREEN}✅ 종료 완료!${NC}"
+    echo -e "${GREEN} 종료 완료!${NC}"
     exit 0
 }
 
@@ -43,7 +43,7 @@ source /opt/ros/humble/setup.bash
 source /home/rokey/ros2_ws/install/setup.bash
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  🔧 하드웨어 시작 (로봇 + 카메라)${NC}"
+echo -e "${GREEN}   하드웨어 시작 (로봇 + 카메라)${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
@@ -94,14 +94,14 @@ sleep 3
 
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  ✅ 하드웨어 실행 완료!${NC}"
+echo -e "${GREEN}   하드웨어 실행 완료!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "  📋 로그 확인:"
+echo -e "   로그 확인:"
 echo -e "     tail -f /tmp/ros2_bringup.log   # 로봇"
 echo -e "     tail -f /tmp/ros2_camera.log    # 카메라"
 echo ""
-echo -e "${YELLOW}  ⏹️  Ctrl+C 를 누르면 종료됩니다${NC}"
+echo -e "${YELLOW}  ⏹  Ctrl+C 를 누르면 종료됩니다${NC}"
 echo ""
 
 while true; do

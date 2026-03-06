@@ -17,7 +17,7 @@ class TTS:
             from openai import OpenAI
             api_key = os.getenv("OPENAI_API_KEY")
             if not api_key:
-                print("⚠️ OPENAI_API_KEY 없음, gTTS로 fallback")
+                print(" OPENAI_API_KEY 없음, gTTS로 fallback")
                 self.engine_type = "gtts"
             else:
                 self.client = OpenAI(api_key=api_key)

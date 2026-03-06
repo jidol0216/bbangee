@@ -53,7 +53,7 @@ class FaceTrackingNode(Node):
         if self.use_flipped:
             self.depth_topic = '/camera/flipped/depth/image_raw'
             self.camera_info_topic = '/camera/flipped/camera_info'
-            self.get_logger().info('🔄 Using FLIPPED camera topics')
+            self.get_logger().info(' Using FLIPPED camera topics')
         else:
             self.depth_topic = '/camera/camera/aligned_depth_to_color/image_raw'
             self.camera_info_topic = '/camera/camera/color/camera_info'
@@ -103,10 +103,10 @@ class FaceTrackingNode(Node):
     
     def _print_startup_info(self):
         self.get_logger().info("=" * 60)
-        self.get_logger().info("🔄 Face Tracking Node 시작! [100Hz]")
-        self.get_logger().info("  🟢 초록 마커: Raw 위치")
-        self.get_logger().info("  🔵 청록 마커: EKF 필터링")
-        self.get_logger().info("  🔴 빨간 마커: 로봇 목표")
+        self.get_logger().info(" Face Tracking Node 시작! [100Hz]")
+        self.get_logger().info("   초록 마커: Raw 위치")
+        self.get_logger().info("   청록 마커: EKF 필터링")
+        self.get_logger().info("   빨간 마커: 로봇 목표")
         self.get_logger().info("=" * 60)
     
     # ========================================
@@ -356,7 +356,7 @@ class FaceTrackingNode(Node):
         if time_diff >= 1.0:
             success_rate = (self.success_count / self.loop_count * 100) if self.loop_count > 0 else 0
             self.get_logger().info(
-                f"📊 {self.loop_count/time_diff:.1f}Hz | 3D: {success_rate:.1f}%",
+                f" {self.loop_count/time_diff:.1f}Hz | 3D: {success_rate:.1f}%",
                 throttle_duration_sec=2.0)
             self.loop_count = 0
             self.success_count = 0
@@ -421,7 +421,7 @@ class FaceTrackingNode(Node):
         
         # 디버그 로그
         self.get_logger().info(
-            f"📍 Target: [{robot_target[0]:.0f}, {robot_target[1]:.0f}, {robot_target[2]:.0f}]mm",
+            f" Target: [{robot_target[0]:.0f}, {robot_target[1]:.0f}, {robot_target[2]:.0f}]mm",
             throttle_duration_sec=1.0)
 
 

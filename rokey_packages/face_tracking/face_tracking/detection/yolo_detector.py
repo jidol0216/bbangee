@@ -153,10 +153,10 @@ class YoloDetector:
             import torch
             if torch.cuda.is_available():
                 gpu_name = torch.cuda.get_device_name(0)
-                self._log(f"🚀 GPU 감지: {gpu_name}")
+                self._log(f" GPU 감지: {gpu_name}")
                 return 'cuda', True
         except Exception as e:
-            self._log(f"⚠️ GPU 확인 실패: {e}", 'warn')
+            self._log(f" GPU 확인 실패: {e}", 'warn')
         
         return 'cpu', False
     
@@ -169,16 +169,16 @@ class YoloDetector:
         # TensorRT 엔진 로드 시도
         if self.use_tensorrt and self.cuda_available:
             if os.path.exists(engine_path):
-                self._log(f"🔥 TensorRT 엔진 로딩: {engine_path}")
+                self._log(f" TensorRT 엔진 로딩: {engine_path}")
                 try:
                     model = YOLO(engine_path)
-                    self._log("✅ TensorRT 엔진 로드 성공!")
+                    self._log(" TensorRT 엔진 로드 성공!")
                     return model
                 except Exception as e:
-                    self._log(f"⚠️ TensorRT 로드 실패: {e}", 'warn')
+                    self._log(f" TensorRT 로드 실패: {e}", 'warn')
             
             # TensorRT 엔진 생성
-            self._log("🔧 TensorRT 엔진 생성 중... (1-2분 소요)")
+            self._log(" TensorRT 엔진 생성 중... (1-2분 소요)")
             try:
                 model = YOLO(self.model_path)
                 model.export(
@@ -188,13 +188,13 @@ class YoloDetector:
                     device=0
                 )
                 if os.path.exists(engine_path):
-                    self._log("✅ TensorRT 엔진 생성 완료!")
+                    self._log(" TensorRT 엔진 생성 완료!")
                     return YOLO(engine_path)
             except Exception as e:
-                self._log(f"⚠️ TensorRT 변환 실패: {e}", 'warn')
+                self._log(f" TensorRT 변환 실패: {e}", 'warn')
         
         # 일반 YOLO 모델
-        self._log(f"🔄 YOLO 모델 로딩: {self.model_path}")
+        self._log(f" YOLO 모델 로딩: {self.model_path}")
         return YOLO(self.model_path)
     
     def preprocess(self, frame: np.ndarray) -> np.ndarray:

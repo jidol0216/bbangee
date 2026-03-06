@@ -27,7 +27,7 @@ from dsr_msgs2.srv import GetCurrentPosx
 ROBOT_ID = "dsr01"
 ROBOT_MODEL = "m0609"
 
-# ⚠️ 카메라 180도 회전 장착 → flipped 이미지 사용
+#  카메라 180도 회전 장착 → flipped 이미지 사용
 IMAGE_TOPIC = "/camera/flipped/color/image_raw"
 
 
@@ -53,7 +53,7 @@ class DataRecordingNode(Node):
             self.image_callback,
             qos
         )
-        self.get_logger().info(f'📷 이미지 토픽: {IMAGE_TOPIC}')
+        self.get_logger().info(f' 이미지 토픽: {IMAGE_TOPIC}')
         
         # 로봇 위치 서비스 클라이언트
         self.get_posx_client = self.create_client(
@@ -73,20 +73,20 @@ class DataRecordingNode(Node):
         if os.path.exists(json_path):
             with open(json_path, 'r') as f:
                 self.write_data = json.load(f)
-            self.get_logger().info(f'📂 기존 데이터 로드: {len(self.write_data["poses"])}장')
+            self.get_logger().info(f' 기존 데이터 로드: {len(self.write_data["poses"])}장')
         
         # 타이머로 OpenCV 창 업데이트 (30Hz)
         self.timer = self.create_timer(0.033, self.display_loop)
         
         self.get_logger().info("=" * 50)
-        self.get_logger().info("🎯 Hand-Eye 캘리브레이션 데이터 수집")
+        self.get_logger().info(" Hand-Eye 캘리브레이션 데이터 수집")
         self.get_logger().info("=" * 50)
         self.get_logger().info("  [q] 이미지 저장")
         self.get_logger().info("  [ESC] 종료")
         self.get_logger().info("  [r] 데이터 초기화")
         self.get_logger().info("=" * 50)
-        self.get_logger().info("📌 체커보드를 고정하고 로봇을 다양한 위치로 이동하세요")
-        self.get_logger().info("📌 최소 30장, 권장 50장 이상 수집")
+        self.get_logger().info(" 체커보드를 고정하고 로봇을 다양한 위치로 이동하세요")
+        self.get_logger().info(" 최소 30장, 권장 50장 이상 수집")
     
     def image_callback(self, msg):
         """ROS2 이미지 메시지를 OpenCV 이미지로 변환"""
@@ -186,7 +186,7 @@ class DataRecordingNode(Node):
             timestamp = int(time.time() * 1000)
             file_name = f"img_{timestamp}.jpg"
             pos = [0, 0, 0, 0, 0, 0]
-            self.get_logger().warn("⚠️ 로봇 위치 수신 안됨 - 이 데이터는 캘리브레이션에 사용할 수 없습니다!")
+            self.get_logger().warn(" 로봇 위치 수신 안됨 - 이 데이터는 캘리브레이션에 사용할 수 없습니다!")
             return  # 로봇 위치 없으면 저장 안함
         
         # 이미지 저장
@@ -201,7 +201,7 @@ class DataRecordingNode(Node):
         with open(f"{self.source_path}/calibrate_data.json", "w") as json_file:
             json.dump(self.write_data, json_file, indent=4)
         
-        self.get_logger().info(f"✅ 저장 완료 [{len(self.write_data['poses'])}장]: {file_name}")
+        self.get_logger().info(f" 저장 완료 [{len(self.write_data['poses'])}장]: {file_name}")
     
     def reset_data(self):
         """데이터 초기화"""
@@ -213,7 +213,7 @@ class DataRecordingNode(Node):
         for f in os.listdir(self.source_path):
             if f.endswith('.jpg'):
                 os.remove(f"{self.source_path}/{f}")
-        self.get_logger().info("🗑️ 데이터 초기화 완료")
+        self.get_logger().info(" 데이터 초기화 완료")
 
 
 def main(args=None):

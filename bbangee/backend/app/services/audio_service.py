@@ -35,15 +35,15 @@ def record_audio(duration: float = 3.5,
     FORMAT = pyaudio.paInt16
     RATE = MIC_SAMPLE_RATE
 
-    print(f"🎤 [record] 시작 duration={duration}, device={device_index}", flush=True)
+    print(f" [record] 시작 duration={duration}, device={device_index}", flush=True)
 
     p = pyaudio.PyAudio()
     try:
         try:
             info = p.get_device_info_by_index(device_index)
-            print(f"🎤 마이크: [{device_index}] {info['name']}", flush=True)
+            print(f" 마이크: [{device_index}] {info['name']}", flush=True)
         except Exception as e:
-            print(f"⚠️ 장치 {device_index} 정보 조회 실패: {e}", flush=True)
+            print(f" 장치 {device_index} 정보 조회 실패: {e}", flush=True)
             traceback.print_exc()
 
         stream = p.open(
@@ -65,11 +65,11 @@ def record_audio(duration: float = 3.5,
         stream.close()
 
         audio_bytes = b"".join(frames)
-        print(f"🎤 [record] 완료! bytes={len(audio_bytes)}", flush=True)
+        print(f" [record] 완료! bytes={len(audio_bytes)}", flush=True)
         return audio_bytes, RATE
 
     except Exception as e:
-        print(f"❌ [record] 에러: {e}", flush=True)
+        print(f" [record] 에러: {e}", flush=True)
         traceback.print_exc()
         return b"", RATE
     finally:

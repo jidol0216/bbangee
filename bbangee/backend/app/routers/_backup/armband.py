@@ -89,7 +89,7 @@ def send_ocr_to_scenario(armband_detected: bool, faction: str, confidence: float
         
         # 자동 식별 발생 시 로그
         if result.get("auto_identified"):
-            print(f"🎯 자동 피아식별 완료: {faction} (신뢰도: {confidence:.0%})")
+            print(f" 자동 피아식별 완료: {faction} (신뢰도: {confidence:.0%})")
             
     except requests.exceptions.Timeout:
         pass  # 타임아웃 무시 (스트림 계속 진행)
@@ -460,7 +460,7 @@ def enable_ocr():
     """OCR 활성화 (식별 시퀀스 시작 시 호출)"""
     with state_lock:
         armband_state["ocr_enabled"] = True
-    print("🎯 OCR 활성화됨")
+    print(" OCR 활성화됨")
     return {"success": True, "ocr_enabled": True}
 
 
@@ -473,7 +473,7 @@ def disable_ocr():
         armband_state["latest_roi_result"] = None
         armband_state["detection_info"] = None
         armband_state["ocr_result"] = None
-    print("🎯 OCR 비활성화됨")
+    print(" OCR 비활성화됨")
     return {"success": True, "ocr_enabled": False}
 
 

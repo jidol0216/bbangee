@@ -12,10 +12,10 @@ export default function PersonnelPanel() {
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [searchSerial, setSearchSerial] = useState("");
 
-  // 🔥 현재 선택된 군번 저장 (state 아님 → load 중복 문제 방지)
+  //  현재 선택된 군번 저장 (state 아님 → load 중복 문제 방지)
   const selectedSerialRef = useRef<string | null>(null);
 
-  /** 📌 최초 1회 – 최근 등록된 사람 불러오기 */
+  /**  최초 1회 – 최근 등록된 사람 불러오기 */
   useEffect(() => {
     const init = async () => {
       const people = await fetchPeople();
@@ -33,7 +33,7 @@ export default function PersonnelPanel() {
     init();
   }, []);
 
-  /** 📌 선택된 사람 기준으로 로그만 자동 갱신 */
+  /**  선택된 사람 기준으로 로그만 자동 갱신 */
   const load = async () => {
     const serial = selectedSerialRef.current;
     if (!serial) return;
@@ -42,16 +42,16 @@ export default function PersonnelPanel() {
     setLatestLog(logs[0] ?? null);
   };
 
-  /** 🔁 2초마다 로그만 갱신 */
+  /**  2초마다 로그만 갱신 */
   useEffect(() => {
     const refresh = setInterval(load, 2000);
     return () => clearInterval(refresh);
   }, []);
 
-  /** 📌 inside 상태 계산 */
+  /**  inside 상태 계산 */
   const isInside = latestLog && latestLog.out_time === null;
 
-  /** 📌 이벤트 push helper */
+  /**  이벤트 push helper */
   const pushEvent = (text: string) => {
     setEvents((prev) => {
       const next = [`[${new Date().toLocaleTimeString()}] ${text}`, ...prev];
@@ -59,54 +59,54 @@ export default function PersonnelPanel() {
     });
   };
 
-  /** 🔍 수동 검색 */
+  /**  수동 검색 */
   const handleSearch = async () => {
     if (!searchSerial.trim()) return;
 
     try {
       const person = await searchPerson(searchSerial.trim());
 
-      // 🔥 검색 → 선택된 군번 갱신
+      //  검색 → 선택된 군번 갱신
       setLatestPerson(person);
       selectedSerialRef.current = person.military_serial;
 
       const logs = await fetchLogsBySerial(person.military_serial);
       setLatestLog(logs[0] ?? null);
 
-      pushEvent(`✔ ${person.name} 검색됨`);
+      pushEvent(` ${person.name} 검색됨`);
       speakClassify(true);
     } catch {
-      pushEvent("❌ 해당 군번의 사용자가 없습니다.");
+      pushEvent(" 해당 군번의 사용자가 없습니다.");
       speakClassify(false);
     }
   };
 
-  /** 🚪 CHECK-IN */
+  /**  CHECK-IN */
   const handleCheckIn = async () => {
     if (!selectedSerialRef.current) return;
 
     if (isInside) {
-      pushEvent("⚠ 이미 입실 상태입니다. 퇴실 먼저 하세요.");
+      pushEvent(" 이미 입실 상태입니다. 퇴실 먼저 하세요.");
       return;
     }
 
     await recordIn(selectedSerialRef.current);
     await load();
-    pushEvent("✔ CHECK-IN 승인");
+    pushEvent(" CHECK-IN 승인");
   };
 
-  /** 🚪 CHECK-OUT */
+  /**  CHECK-OUT */
   const handleCheckOut = async () => {
     if (!selectedSerialRef.current) return;
 
     if (!isInside) {
-      pushEvent("⚠ 입실 기록이 없어 퇴실할 수 없습니다.");
+      pushEvent(" 입실 기록이 없어 퇴실할 수 없습니다.");
       return;
     }
 
     await recordOut(selectedSerialRef.current);
     await load();
-    pushEvent("✔ CHECK-OUT 처리");
+    pushEvent(" CHECK-OUT 처리");
   };
 
   return (

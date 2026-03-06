@@ -119,7 +119,7 @@ export default function GripperControl() {
               padding: '2px 8px',
               borderRadius: '4px'
             }}>
-              🤏 물체 감지
+               물체 감지
             </span>
           )}
         </div>
@@ -156,7 +156,7 @@ export default function GripperControl() {
             disabled={loading || !status.connected}
             style={{flex: 1, padding: '10px'}}
           >
-            ✋ 열기
+             열기
           </button>
           <button
             className="btn btn-danger"
@@ -164,12 +164,12 @@ export default function GripperControl() {
             disabled={loading || !status.connected}
             style={{flex: 1, padding: '10px'}}
           >
-            ✊ 닫기
+             닫기
           </button>
         </div>
 
         {/* 권총 파지/거치 버튼 */}
-        <div style={{fontSize: '11px', color: '#666', marginBottom: '6px'}}>🔫 권총 제어</div>
+        <div style={{fontSize: '11px', color: '#666', marginBottom: '6px'}}> 권총 제어</div>
         <div style={{display: 'flex', gap: '8px', marginBottom: '12px'}}>
           <button
             className="btn"
@@ -183,7 +183,7 @@ export default function GripperControl() {
               fontWeight: 'bold'
             }}
           >
-            🔫 권총 파지
+             권총 파지
           </button>
           <button
             className="btn"
@@ -197,7 +197,7 @@ export default function GripperControl() {
               fontWeight: 'bold'
             }}
           >
-            📥 권총 거치
+             권총 거치
           </button>
         </div>
 

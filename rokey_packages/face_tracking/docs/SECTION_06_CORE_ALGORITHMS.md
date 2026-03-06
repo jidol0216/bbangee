@@ -2,7 +2,7 @@
 
 ---
 
-## 📋 섹션 개요
+##  섹션 개요
 
 | 항목 | 내용 |
 |------|------|
@@ -12,7 +12,7 @@
 
 ---
 
-## 📐 6.1 Extended Kalman Filter (EKF)
+##  6.1 Extended Kalman Filter (EKF)
 
 ### 6.1.1 개요
 
@@ -157,7 +157,7 @@ class EKF9State:
 
 ---
 
-## 🎯 6.2 Joint-space P-Control
+##  6.2 Joint-space P-Control
 
 ### 6.2.1 개요
 
@@ -298,7 +298,7 @@ def compute_joint_velocities(face_pos, current_joints, start_joints):
 
 ---
 
-## 🔄 6.3 좌표 변환 (TF2)
+##  6.3 좌표 변환 (TF2)
 
 ### 6.3.1 변환 체인
 
@@ -366,7 +366,7 @@ def transform_to_robot_frame(point_camera, tf_buffer):
 
 ---
 
-## 📊 6.4 Depth 처리 알고리즘
+##  6.4 Depth 처리 알고리즘
 
 ### 6.4.1 Trimmed Mean
 
@@ -418,13 +418,13 @@ def get_depth_trimmed_mean(depth_frame, cx, cy, window=1):
 
 | 방법 | 데이터 예시 | 결과 | 이상치 처리 |
 |------|------------|------|------------|
-| Mean | [580, 585, 590, 1200] | 739 | ❌ |
-| Median | [580, 585, 590, 1200] | 587 | ✅ |
-| **Trimmed Mean** | [580, 585, 590, 1200] | **585** | ✅ (더 정확) |
+| Mean | [580, 585, 590, 1200] | 739 |  |
+| Median | [580, 585, 590, 1200] | 587 |  |
+| **Trimmed Mean** | [580, 585, 590, 1200] | **585** |  (더 정확) |
 
 ---
 
-## 🎛️ 6.5 ROI Tracking
+##  6.5 ROI Tracking
 
 ### 6.5.1 개요
 
@@ -441,7 +441,7 @@ def get_depth_trimmed_mean(depth_frame, cx, cy, window=1):
 │   ┌─────────────────┐              ┌─────────────────┐         │
 │   │                 │              │     ┌─────┐     │         │
 │   │    ┌─────┐      │              │     │ ROI │     │         │
-│   │    │ 😊  │      │   ─────▶     │     │ 😊  │     │         │
+│   │    │   │      │   ─────▶     │     │   │     │         │
 │   │    └─────┘      │   이전 위치   │     └─────┘     │         │
 │   │                 │   기반 ROI    │                 │         │
 │   └─────────────────┘              └─────────────────┘         │
@@ -496,7 +496,7 @@ class ROITracker:
 
 ---
 
-## 📈 6.6 알고리즘 성능 요약
+##  6.6 알고리즘 성능 요약
 
 ### 처리 시간 분석
 
@@ -530,4 +530,4 @@ class ROITracker:
 
 > **작성자**: 태슬라 (헤드샷 트래킹 담당)  
 > **최종 수정**: 2025-12-15  
-> **상태**: ✅ 완료
+> **상태**:  완료

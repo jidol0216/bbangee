@@ -40,16 +40,16 @@ def print_step(step, text):
     print(f"{Colors.CYAN}[Step {step}]{Colors.ENDC} {text}")
 
 def print_success(text):
-    print(f"{Colors.GREEN}✅ {text}{Colors.ENDC}")
+    print(f"{Colors.GREEN} {text}{Colors.ENDC}")
 
 def print_error(text):
-    print(f"{Colors.RED}❌ {text}{Colors.ENDC}")
+    print(f"{Colors.RED} {text}{Colors.ENDC}")
 
 def print_warning(text):
-    print(f"{Colors.YELLOW}⚠️  {text}{Colors.ENDC}")
+    print(f"{Colors.YELLOW}  {text}{Colors.ENDC}")
 
 def print_info(text):
-    print(f"{Colors.BLUE}ℹ️  {text}{Colors.ENDC}")
+    print(f"{Colors.BLUE}ℹ  {text}{Colors.ENDC}")
 
 
 def check_server():
@@ -178,22 +178,22 @@ def run_scenario(scenario_num: int, delay: float = 1.0):
         # 결과 출력
         print()
         if state == "ALLY_PASS":
-            print_success(f"🎖️  결과: {state}")
+            print_success(f"  결과: {state}")
             print_info("TTS: '확인되었습니다. 통과하세요.'")
             print_info("로봇: 경례 모션")
         elif state == "ALLY_ALERT":
-            print_warning(f"⚠️  결과: {state}")
+            print_warning(f"  결과: {state}")
             print_info("TTS: '암구호가 틀렸습니다. 움직이지 마세요.'")
             print_info("로봇: High Ready 유지")
         elif state == "ENEMY_CRITICAL":
-            print_error(f"🚨 결과: {state}")
+            print_error(f" 결과: {state}")
             print_info("TTS: '경고! 기밀 유출 의심! 비상 알림 발령!'")
             print_info("     + 부저음 (비프 3회)")
             print_info("     + TTS: '경고! 경고! 경고!'")
             print_info("로봇: 추적 속도 1.5배 가속")
         elif state == "ENEMY_ENGAGE":
-            print_error(f"🔴 결과: {state}")
-            print_info("🔫 서보모터 ON (조준)")
+            print_error(f" 결과: {state}")
+            print_info(" 서보모터 ON (조준)")
             print_info("TTS: '코드 레드 발령, 코드 레드 발령, 침입자 대응 조치할 것!'")
             print_info("     + 사이렌 (TTS 2.5초 후 시작, 8초간 재생)")
             print_info("로봇: 추적 속도 1.5배 가속")
@@ -233,7 +233,7 @@ def test_ocr_auto_identify():
         print_info(f"  [{i+1}/3] {result.get('message', result)}")
         
         if result.get("auto_identified"):
-            print_success(f"🎯 자동 피아식별 완료! 상태: {result.get('state')}")
+            print_success(f" 자동 피아식별 완료! 상태: {result.get('state')}")
             break
         
         time.sleep(0.3)

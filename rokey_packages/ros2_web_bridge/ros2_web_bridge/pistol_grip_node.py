@@ -38,7 +38,7 @@ class PistolGripNode:
         # 명령 파일 감시 타이머 (10Hz)
         self.timer = node.create_timer(0.1, self._check_commands)
         
-        self.get_logger().info('🔫 PistolGripNode 시작!')
+        self.get_logger().info(' PistolGripNode 시작!')
         self.get_logger().info('   로봇 이동: ros2 service call')
         self.get_logger().info('   그리퍼: HTTP API')
     
@@ -112,7 +112,7 @@ class PistolGripNode:
                 command = json.load(f)
             
             cmd_type = command.get('type', '')
-            self.get_logger().info(f'📥 명령 파일 읽음: type={cmd_type}')
+            self.get_logger().info(f' 명령 파일 읽음: type={cmd_type}')
             
             # 새 명령인지 확인
             cmd_time = command.get('timestamp', 0)
@@ -126,11 +126,11 @@ class PistolGripNode:
                 return
             
             self.last_command_time = cmd_time
-            self.get_logger().info(f'✅ pistol_action 명령 처리 시작')
+            self.get_logger().info(f' pistol_action 명령 처리 시작')
             
             # 처리된 명령 삭제
             os.remove(COMMAND_FILE)
-            self.get_logger().info('📄 명령 파일 삭제됨')
+            self.get_logger().info(' 명령 파일 삭제됨')
             
             # 직접 실행 (쓰레딩 사용 안함 - spin 충돌 방지)
             data = command.get('data', {})
@@ -187,7 +187,7 @@ class PistolGripNode:
 
     def _do_grip(self, data: dict):
         """
-        🔫 권총 파지 (Pick up)
+         권총 파지 (Pick up)
         1. 그리퍼 열기
         2. 위치로 이동
         3. 그리퍼 닫기
@@ -200,36 +200,36 @@ class PistolGripNode:
         acc = data.get('acceleration', 60)
         
         self.get_logger().info('=' * 50)
-        self.get_logger().info('🔫 권총 파지 시작')
+        self.get_logger().info(' 권총 파지 시작')
         self.get_logger().info(f'   파지 위치: ({pos["x"]:.1f}, {pos["y"]:.1f}, {pos["z"]:.1f})')
         self.get_logger().info(f'   들어올리기: +{z_lift}mm')
         self.get_logger().info('=' * 50)
         
         # === 1. 그리퍼 열기 ===
-        self.get_logger().info('1️⃣ 그리퍼 열기...')
+        self.get_logger().info('1 그리퍼 열기...')
         self._gripper_open()
         
         # === 2. 위치로 이동 ===
-        self.get_logger().info(f'2️⃣ 파지 위치로 이동...')
+        self.get_logger().info(f'2 파지 위치로 이동...')
         self._move_to_position(pos, vel, acc)
         
         # === 3. 그리퍼 닫기 ===
-        self.get_logger().info(f'3️⃣ 그리퍼 닫기 (잡기)...')
+        self.get_logger().info(f'3 그리퍼 닫기 (잡기)...')
         self._gripper_close(grip_width)
         
         # === 4. Z축 들어올리기 ===
         lift_pos = pos.copy()
         lift_pos['z'] = pos['z'] + z_lift
-        self.get_logger().info(f'4️⃣ Z축 들어올리기... Z={lift_pos["z"]:.1f}mm (+{z_lift}mm)')
+        self.get_logger().info(f'4 Z축 들어올리기... Z={lift_pos["z"]:.1f}mm (+{z_lift}mm)')
         self._move_to_position(lift_pos, vel=30, acc=30)  # 느린 속도로 들어올리기
         
         self.get_logger().info('=' * 50)
-        self.get_logger().info('✅ 권총 파지 완료! (시작위치 버튼 누르세요)')
+        self.get_logger().info(' 권총 파지 완료! (시작위치 버튼 누르세요)')
         self.get_logger().info('=' * 50)
     
     def _do_holster(self, data: dict):
         """
-        🔫 권총 거치 (Put down)
+         권총 거치 (Put down)
         1. 위치로 이동
         2. 그리퍼 열기
         """
@@ -238,20 +238,20 @@ class PistolGripNode:
         acc = data.get('acceleration', 60)
         
         self.get_logger().info('=' * 50)
-        self.get_logger().info('🔫 권총 거치 시작')
+        self.get_logger().info(' 권총 거치 시작')
         self.get_logger().info(f'   위치: ({pos["x"]:.1f}, {pos["y"]:.1f}, {pos["z"]:.1f})')
         self.get_logger().info('=' * 50)
         
         # === 1. 위치로 이동 ===
-        self.get_logger().info(f'1️⃣ 위치로 이동...')
+        self.get_logger().info(f'1 위치로 이동...')
         self._move_to_position(pos, vel, acc)
         
         # === 2. 그리퍼 열기 ===
-        self.get_logger().info('2️⃣ 그리퍼 열기 (놓기)...')
+        self.get_logger().info('2 그리퍼 열기 (놓기)...')
         self._gripper_open()
         
         self.get_logger().info('=' * 50)
-        self.get_logger().info('✅ 권총 거치 완료!')
+        self.get_logger().info(' 권총 거치 완료!')
         self.get_logger().info('=' * 50)
 
 
@@ -267,7 +267,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     except Exception as e:
-        print(f'❌ 에러: {e}')
+        print(f' 에러: {e}')
         import traceback
         traceback.print_exc()
     finally:

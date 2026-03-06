@@ -5,7 +5,7 @@ class ClassifyVoice:
         print("ClassifyVoice 초기화 중...")
         # gTTS 사용 (무료, API 키 불필요)
         self.tts = TTS(engine_type="gtts")
-        print("✓ TTS 준비 완료 (gTTS)")
+        print(" TTS 준비 완료 (gTTS)")
 
     def speak_result(self, is_ally: bool):
         message = "아군입니다" if is_ally else "적군입니다"

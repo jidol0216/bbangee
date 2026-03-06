@@ -80,7 +80,7 @@ def get_pistol_settings():
 @router.post("/grip")
 def pistol_grip(req: GripRequest = GripRequest()):
     """
-    🔫 권총 파지 (Pick up)
+     권총 파지 (Pick up)
     
     순서:
     1. 그리퍼 열기
@@ -102,7 +102,7 @@ def pistol_grip(req: GripRequest = GripRequest()):
     
     return {
         "success": True,
-        "message": "🔫 권총 파지 명령 전송",
+        "message": " 권총 파지 명령 전송",
         "action": "grip",
         "description": "그리퍼 열기 → 위치 이동 → 그리퍼 닫기 → 들어올리기 → 홈 이동"
     }
@@ -111,7 +111,7 @@ def pistol_grip(req: GripRequest = GripRequest()):
 @router.post("/holster")
 def pistol_holster(req: GripRequest = GripRequest()):
     """
-    🔫 권총 거치 (Put down)
+     권총 거치 (Put down)
     
     순서:
     1. 위치로 이동
@@ -130,7 +130,7 @@ def pistol_holster(req: GripRequest = GripRequest()):
     
     return {
         "success": True,
-        "message": "🔫 권총 거치 명령 전송",
+        "message": " 권총 거치 명령 전송",
         "action": "holster",
         "description": "위치 이동 → 그리퍼 열기"
     }

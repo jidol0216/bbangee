@@ -59,7 +59,7 @@ class MicController:
             info = self.audio.get_device_info_by_index(device_index)
             # 장치가 지원하는 채널 수로 조정
             channels = min(self.config.channels, int(info['maxInputChannels']))
-            print(f"🎙️  마이크: {info['name']} (장치 {device_index})")
+            print(f"  마이크: {info['name']} (장치 {device_index})")
         
         self.stream = self.audio.open(
             format=self.config.fmt,
@@ -87,7 +87,7 @@ class MicController:
         frames = []
         num_chunks = int(self.config.rate / self.config.chunk * duration)
 
-        print(f"🎤 {duration}초 동안 녹음 중...")
+        print(f" {duration}초 동안 녹음 중...")
         for i in range(num_chunks):
             data = self.stream.read(self.config.chunk, exception_on_overflow=False)
             frames.append(data)
@@ -141,9 +141,9 @@ def run_auth_test(question: str, answer: str, timeout: float, device_index: int 
     print("        (질문-대답 체계)")
     print("=" * 60)
     print()
-    print(f"📋 질문 암구호: \"{question}\"")
-    print(f"📋 정답 암구호: \"{answer}\"")
-    print(f"⏱️  녹음 시간: {timeout}초")
+    print(f" 질문 암구호: \"{question}\"")
+    print(f" 정답 암구호: \"{answer}\"")
+    print(f"⏱  녹음 시간: {timeout}초")
     print()
     print("-" * 60)
     
@@ -170,15 +170,15 @@ def run_auth_test(question: str, answer: str, timeout: float, device_index: int 
     print()
     
     # 4. STT 처리
-    print("🔄 STT 처리 중...")
+    print(" STT 처리 중...")
     recognizer = sr.Recognizer()
     audio_data = sr.AudioData(pcm_data, mic.config.rate, 2)  # 16bit = 2bytes
     
     try:
         recognized = recognizer.recognize_google(audio_data, language="ko-KR")
-        print(f"📝 인식된 텍스트: \"{recognized}\"")
+        print(f" 인식된 텍스트: \"{recognized}\"")
     except sr.UnknownValueError:
-        print("❌ 음성을 인식하지 못했습니다.")
+        print(" 음성을 인식하지 못했습니다.")
         print()
         print("=" * 60)
         print("        결과: 인증 실패 (음성 인식 불가)")
@@ -186,7 +186,7 @@ def run_auth_test(question: str, answer: str, timeout: float, device_index: int 
         tts_say("암구호 불일치. 정지하십시오!")
         return False
     except sr.RequestError as e:
-        print(f"❌ STT 서비스 오류: {e}")
+        print(f" STT 서비스 오류: {e}")
         print()
         print("=" * 60)
         print("        결과: 인증 실패 (서비스 오류)")
@@ -202,16 +202,16 @@ def run_auth_test(question: str, answer: str, timeout: float, device_index: int 
     print()
     print("=" * 60)
     if is_match:
-        print(f"   ✅ 결과: 일치합니다!")
-        print(f"   📋 기대 정답: \"{answer}\"")
-        print(f"   📝 인식된 답: \"{recognized}\"")
+        print(f"    결과: 일치합니다!")
+        print(f"    기대 정답: \"{answer}\"")
+        print(f"    인식된 답: \"{recognized}\"")
         print()
         print("   >>> 암구호 인증 성공 <<<")
         tts_say("암구호 일치. 통과하십시오.")
     else:
-        print(f"   ❌ 결과: 일치하지 않습니다!")
-        print(f"   📋 기대 정답: \"{answer}\"")
-        print(f"   📝 인식된 답: \"{recognized}\"")
+        print(f"    결과: 일치하지 않습니다!")
+        print(f"    기대 정답: \"{answer}\"")
+        print(f"    인식된 답: \"{recognized}\"")
         print()
         print("   >>> 암구호 인증 실패 <<<")
         tts_say("암구호 불일치. 정지하십시오!")

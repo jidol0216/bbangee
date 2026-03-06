@@ -111,7 +111,7 @@ def elevenlabs_speak(text: str, voice_id: str = DEFAULT_VOICE_ID, volume_boost_d
     ElevenLabs TTS로 텍스트 발화 (서버 스피커)
     volume_boost_db: 볼륨 증폭 (dB). 기본 +10dB
     
-    ⚠️ tts_lock으로 동시 실행 방지 - 한 번에 하나의 TTS만 재생
+     tts_lock으로 동시 실행 방지 - 한 번에 하나의 TTS만 재생
     """
     import sys
     
@@ -176,7 +176,7 @@ def record_audio(duration: float = 3.5, device_index: int = 4) -> bytes:
     FORMAT = pyaudio.paInt16
     RATE = 48000  # C270 웹캠 기본 샘플레이트
     
-    print(f"🎤 [record_audio] 시작 - duration={duration}, device={device_index}", flush=True)
+    print(f" [record_audio] 시작 - duration={duration}, device={device_index}", flush=True)
     
     p = pyaudio.PyAudio()
     
@@ -184,12 +184,12 @@ def record_audio(duration: float = 3.5, device_index: int = 4) -> bytes:
         # C270 웹캠 마이크 사용 (장치 4)
         try:
             info = p.get_device_info_by_index(device_index)
-            print(f"🎤 마이크: [{device_index}] {info['name']}", flush=True)
+            print(f" 마이크: [{device_index}] {info['name']}", flush=True)
         except Exception as e:
-            print(f"⚠️ 장치 {device_index} 정보 조회 실패: {e}", flush=True)
+            print(f" 장치 {device_index} 정보 조회 실패: {e}", flush=True)
             traceback.print_exc()
         
-        print(f"🎤 [record_audio] stream 열기 시도...", flush=True)
+        print(f" [record_audio] stream 열기 시도...", flush=True)
         stream = p.open(
             format=FORMAT,
             channels=CHANNELS,
@@ -198,12 +198,12 @@ def record_audio(duration: float = 3.5, device_index: int = 4) -> bytes:
             input_device_index=device_index,
             frames_per_buffer=CHUNK
         )
-        print(f"🎤 [record_audio] stream 열림!", flush=True)
+        print(f" [record_audio] stream 열림!", flush=True)
         
         frames = []
         num_chunks = int(RATE / CHUNK * duration)
         
-        print(f"🎤 {duration}초 녹음 중... (chunks: {num_chunks})", flush=True)
+        print(f" {duration}초 녹음 중... (chunks: {num_chunks})", flush=True)
         for i in range(num_chunks):
             data = stream.read(CHUNK, exception_on_overflow=False)
             frames.append(data)
@@ -212,11 +212,11 @@ def record_audio(duration: float = 3.5, device_index: int = 4) -> bytes:
         stream.close()
         
         audio_bytes = b"".join(frames)
-        print(f"🎤 [record_audio] 완료! bytes={len(audio_bytes)}", flush=True)
+        print(f" [record_audio] 완료! bytes={len(audio_bytes)}", flush=True)
         
         return audio_bytes, RATE
     except Exception as e:
-        print(f"❌ [record_audio] 에러: {e}", flush=True)
+        print(f" [record_audio] 에러: {e}", flush=True)
         traceback.print_exc()
         return b"", RATE
     finally:
@@ -260,7 +260,7 @@ def submit_to_scenario(password: str) -> dict:
             timeout=5
         )
         result = response.json()
-        print(f"🎯 시나리오 암구호 제출: '{password}' → {result}")
+        print(f" 시나리오 암구호 제출: '{password}' → {result}")
         return result
     except Exception as e:
         print(f"시나리오 암구호 제출 실패: {e}")
@@ -284,9 +284,9 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
             answer = auth_state["answer"]
         
         # 1. TTS: 질문만 (정지!는 시나리오에서 이미 말함)
-        print(f"🔊 TTS 시작: 암구호! {question}!", flush=True)
+        print(f" TTS 시작: 암구호! {question}!", flush=True)
         elevenlabs_speak(f"암구호! {question}!", voice_id)
-        print("🔊 TTS 완료, 1초 대기 후 녹음 시작", flush=True)
+        print(" TTS 완료, 1초 대기 후 녹음 시작", flush=True)
         time.sleep(1.0)  # TTS 끝난 후 잠시 대기 (마이크가 TTS 소리 안 잡도록)
         
         # 2. 상태 변경: LISTENING
@@ -305,7 +305,7 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
         
         # 5. STT
         recognized = speech_to_text(audio_data, rate=sample_rate)
-        print(f"📝 인식된 텍스트: '{recognized}'", flush=True)
+        print(f" 인식된 텍스트: '{recognized}'", flush=True)
         
         with state_lock:
             auth_state["recognized_text"] = recognized
@@ -313,9 +313,9 @@ def run_auth_process(timeout_sec: float, voice_id: str = DEFAULT_VOICE_ID):
         # 6. 시나리오 시스템에 자동 제출 (인식된 텍스트가 있으면)
         if recognized.strip():
             scenario_result = submit_to_scenario(recognized.strip())
-            print(f"📤 시나리오 제출 결과: {scenario_result}", flush=True)
+            print(f" 시나리오 제출 결과: {scenario_result}", flush=True)
         else:
-            print("⚠️ 인식된 텍스트 없음 - 시나리오 제출 건너뜀", flush=True)
+            print(" 인식된 텍스트 없음 - 시나리오 제출 건너뜀", flush=True)
         
         # 7. 암구호 비교 (로컬 확인용)
         is_match = check_passphrase(recognized, answer)
@@ -367,9 +367,9 @@ def run_auth_process_for_scenario(timeout_sec: float, voice_id: str = DEFAULT_VO
             answer = auth_state["answer"]
         
         # 1. TTS: 질문
-        print(f"🔊 [시나리오] TTS 시작: 암구호! {question}!", flush=True)
+        print(f" [시나리오] TTS 시작: 암구호! {question}!", flush=True)
         elevenlabs_speak(f"암구호! {question}!", voice_id)
-        print("🔊 [시나리오] TTS 완료, 1초 대기 후 녹음 시작", flush=True)
+        print(" [시나리오] TTS 완료, 1초 대기 후 녹음 시작", flush=True)
         time.sleep(1.0)
         
         # 2. 상태 변경: LISTENING
@@ -388,7 +388,7 @@ def run_auth_process_for_scenario(timeout_sec: float, voice_id: str = DEFAULT_VO
         
         # 5. STT
         recognized = speech_to_text(audio_data, rate=sample_rate)
-        print(f"📝 [시나리오] 인식된 텍스트: '{recognized}'", flush=True)
+        print(f" [시나리오] 인식된 텍스트: '{recognized}'", flush=True)
         
         with state_lock:
             auth_state["recognized_text"] = recognized
@@ -396,9 +396,9 @@ def run_auth_process_for_scenario(timeout_sec: float, voice_id: str = DEFAULT_VO
         # 6. 시나리오 시스템에 자동 제출
         if recognized.strip():
             scenario_result = submit_to_scenario(recognized.strip())
-            print(f"📤 [시나리오] 제출 결과: {scenario_result}", flush=True)
+            print(f" [시나리오] 제출 결과: {scenario_result}", flush=True)
         else:
-            print("⚠️ [시나리오] 인식된 텍스트 없음 - 시나리오 제출 건너뜀", flush=True)
+            print(" [시나리오] 인식된 텍스트 없음 - 시나리오 제출 건너뜀", flush=True)
         
         # 7. 암구호 비교
         is_match = check_passphrase(recognized, answer)
@@ -418,7 +418,7 @@ def run_auth_process_for_scenario(timeout_sec: float, voice_id: str = DEFAULT_VO
             auth_state["status"] = "IDLE"
             auth_state["scenario_locked"] = False  # 시나리오 락 해제
             save_state()
-        print("🔓 [시나리오] 음성 인증 완료, 보이스 패널 락 해제", flush=True)
+        print(" [시나리오] 음성 인증 완료, 보이스 패널 락 해제", flush=True)
             
     except Exception as e:
         print(f"[시나리오] 인증 프로세스 오류: {e}")
@@ -673,7 +673,7 @@ def run_listen_only_process(timeout_sec: float = 3.5):
         
         # 4. STT
         recognized = speech_to_text(audio_data, rate=sample_rate)
-        print(f"📝 [자동인식] 인식된 텍스트: {recognized}")
+        print(f" [자동인식] 인식된 텍스트: {recognized}")
         
         with state_lock:
             auth_state["recognized_text"] = recognized
@@ -681,9 +681,9 @@ def run_listen_only_process(timeout_sec: float = 3.5):
         # 5. 시나리오 시스템에 자동 제출 (인식된 텍스트가 있으면)
         if recognized.strip():
             scenario_result = submit_to_scenario(recognized.strip())
-            print(f"📤 [자동인식] 시나리오 제출 결과: {scenario_result}")
+            print(f" [자동인식] 시나리오 제출 결과: {scenario_result}")
         else:
-            print("📤 [자동인식] 인식된 텍스트 없음 - 제출 스킵")
+            print(" [자동인식] 인식된 텍스트 없음 - 제출 스킵")
         
         # 6. 암구호 비교 (로컬 확인용)
         is_match = check_passphrase(recognized, answer) if recognized else False

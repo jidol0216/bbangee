@@ -47,10 +47,10 @@ def main():
         start_joints = posj(START_JOINTS)
         start_posx = fkin(start_joints)
         
-        print(f'\n📌 웹 START_JOINTS (조인트 각도):')
+        print(f'\n 웹 START_JOINTS (조인트 각도):')
         print(f'   {START_JOINTS}')
         
-        print(f'\n📌 변환된 직교좌표 (fkin):')
+        print(f'\n 변환된 직교좌표 (fkin):')
         print(f'   X: {start_posx[0]:.3f} mm')
         print(f'   Y: {start_posx[1]:.3f} mm')
         print(f'   Z: {start_posx[2]:.3f} mm')
@@ -58,7 +58,7 @@ def main():
         print(f'   RY: {start_posx[4]:.3f} deg')
         print(f'   RZ: {start_posx[5]:.3f} deg')
         
-        print(f'\n📌 go_coordinate_grip.py A2 좌표:')
+        print(f'\n go_coordinate_grip.py A2 좌표:')
         print(f'   X: {A2_POS["x"]:.3f} mm')
         print(f'   Y: {A2_POS["y"]:.3f} mm')
         print(f'   Z: {A2_POS["z"]:.3f} mm')
@@ -71,7 +71,7 @@ def main():
         diff_y = abs(start_posx[1] - A2_POS['y'])
         diff_z = abs(start_posx[2] - A2_POS['z'])
         
-        print(f'\n📊 위치 차이:')
+        print(f'\n 위치 차이:')
         print(f'   ΔX: {diff_x:.3f} mm')
         print(f'   ΔY: {diff_y:.3f} mm')
         print(f'   ΔZ: {diff_z:.3f} mm')
@@ -80,14 +80,14 @@ def main():
         print(f'   총 거리: {total_diff:.3f} mm')
         
         if total_diff < 10:
-            print('\n✅ 위치가 거의 같습니다! (차이 < 10mm)')
+            print('\n 위치가 거의 같습니다! (차이 < 10mm)')
         elif total_diff < 50:
-            print('\n⚠️ 위치가 비슷합니다. (차이 < 50mm)')
+            print('\n 위치가 비슷합니다. (차이 < 50mm)')
         else:
-            print('\n❌ 위치가 다릅니다! A2 좌표 업데이트 필요')
+            print('\n 위치가 다릅니다! A2 좌표 업데이트 필요')
         
         # 현재 로봇 위치도 출력
-        print(f'\n📍 현재 로봇 위치:')
+        print(f'\n 현재 로봇 위치:')
         current = get_current_posx()[0]
         print(f'   X: {current[0]:.3f}, Y: {current[1]:.3f}, Z: {current[2]:.3f}')
         print(f'   RX: {current[3]:.3f}, RY: {current[4]:.3f}, RZ: {current[5]:.3f}')
@@ -95,7 +95,7 @@ def main():
         print('=' * 60)
         
     except Exception as e:
-        print(f'❌ 에러: {e}')
+        print(f' 에러: {e}')
         import traceback
         traceback.print_exc()
     finally:

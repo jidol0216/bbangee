@@ -100,7 +100,7 @@ class ScenarioManager:
                 json={"question": self.password_challenge, "answer": self.password_response},
                 timeout=1.0
             )
-            print(f"🔄 Voice API 암구호 동기화: {self.password_challenge} → {self.password_response}")
+            print(f" Voice API 암구호 동기화: {self.password_challenge} → {self.password_response}")
         except Exception as e:
             print(f"Voice API 동기화 실패: {e}")
     
@@ -200,7 +200,7 @@ class ScenarioManager:
             "message": "접근자 감지! 피아식별 필요",
             "popup": {
                 "show": False,  # 팝업 비활성화
-                "title": "⚠️ 접근자 감지",
+                "title": " 접근자 감지",
                 "message": "아군/적군을 판정해주세요",
                 "buttons": ["아군", "적군"]
             }
@@ -213,7 +213,7 @@ class ScenarioManager:
         if self.state != ScenarioState.DETECTED:
             return {"success": False, "message": "감지 상태가 아닙니다"}
         
-        # 🔒 OCR 비활성화 (피아식별 완료 후 더 이상 OCR 불필요)
+        #  OCR 비활성화 (피아식별 완료 후 더 이상 OCR 불필요)
         await self._set_ocr_enabled(False)
         
         self.person_type = PersonType.ALLY if is_ally else PersonType.ENEMY
@@ -236,13 +236,13 @@ class ScenarioManager:
             "message": f"{person_str} 식별됨 - 암구호 확인 중",
             "popup": {
                 "show": False,  # 팝업 비활성화
-                "title": f"🔒 암구호: {self.password_challenge}!",
+                "title": f" 암구호: {self.password_challenge}!",
                 "message": "응답 암구호를 입력하세요",
                 "input": True
             }
         })
         
-        # 🎤 자동 음성 인식 시작 (Voice Panel 방식: TTS + 녹음 + STT + 제출)
+        #  자동 음성 인식 시작 (Voice Panel 방식: TTS + 녹음 + STT + 제출)
         await self._start_voice_auth()
         
         return {"success": True, "state": self.state.value, "person_type": self.person_type.value}
@@ -261,7 +261,7 @@ class ScenarioManager:
             if is_correct:
                 self.state = ScenarioState.ALLY_PASS
                 self._add_history("아군 암구호 정답 - 통과 승인")
-                result_msg = "✅ 아군 통과 승인"
+                result_msg = " 아군 통과 승인"
                 alert_level = "success"
                 robot_motion = "salute"  # 경례 모션으로 시나리오 종료
                 # 경례 모션 먼저 실행 후 TTS
@@ -271,7 +271,7 @@ class ScenarioManager:
             else:
                 self.state = ScenarioState.ALLY_ALERT
                 self._add_history("아군 암구호 오답 - 경고")
-                result_msg = "⚠️ 아군 암구호 오답 - 경고 발령"
+                result_msg = " 아군 암구호 오답 - 경고 발령"
                 alert_level = "warning"
                 robot_motion = "high_ready"  # High Ready 유지
                 await self._execute_robot_motion(robot_motion)
@@ -282,18 +282,18 @@ class ScenarioManager:
                 self.state = ScenarioState.ENEMY_CRITICAL
                 self._add_history("적군 암구호 정답 - 기밀유출 의심")
                 await self._play_enemy_critical_alert()  # TTS + 경고음 + "경고! 경고! 경고!"
-                result_msg = "🚨 적군이 암구호 정답 - 기밀유출!"
+                result_msg = " 적군이 암구호 정답 - 기밀유출!"
                 alert_level = "critical"
             else:
                 self.state = ScenarioState.ENEMY_ENGAGE
                 self._add_history("적군 암구호 오답 - 대응")
                 
-                # 🔫 1초 후 서보 ON (조준 자세)
+                #  1초 후 서보 ON (조준 자세)
                 await asyncio.sleep(1.0)
                 await self._control_device("servo", True)
                 
                 await self._play_enemy_engage_alert()  # 사이렌 + "코드 레드 발령..."
-                result_msg = "🔴 적군 대응 - 침입자!"
+                result_msg = " 적군 대응 - 침입자!"
                 alert_level = "danger"
             
             # 적군: 추적 속도 증가 (더 빠르게 추적)
@@ -338,7 +338,7 @@ class ScenarioManager:
         try:
             with open(command_file, 'w') as f:
                 json.dump(command, f)
-            print("⚡ 추적 속도 증가 명령 전송")
+            print(" 추적 속도 증가 명령 전송")
             self._add_history("추적 속도 증가")
         except Exception as e:
             print(f"추적 속도 증가 명령 전송 실패: {e}")
@@ -360,7 +360,7 @@ class ScenarioManager:
         try:
             with open(command_file, 'w') as f:
                 json.dump(command, f)
-            print("🔄 추적 속도 초기화")
+            print(" 추적 속도 초기화")
         except Exception as e:
             print(f"추적 속도 초기화 실패: {e}")
     
@@ -437,11 +437,11 @@ class ScenarioManager:
         # OCR 성공! → 누적 카운트 증가
         if faction == "ALLY" and confidence >= self.ocr_confidence_threshold:
             self.ocr_ally_count += 1
-            print(f"✅ ALLY 인식! (누적: ALLY={self.ocr_ally_count}, ENEMY={self.ocr_enemy_count})")
+            print(f" ALLY 인식! (누적: ALLY={self.ocr_ally_count}, ENEMY={self.ocr_enemy_count})")
             
         elif faction == "ENEMY" and confidence >= self.ocr_confidence_threshold:
             self.ocr_enemy_count += 1
-            print(f"❌ ENEMY 인식! (누적: ALLY={self.ocr_ally_count}, ENEMY={self.ocr_enemy_count})")
+            print(f" ENEMY 인식! (누적: ALLY={self.ocr_ally_count}, ENEMY={self.ocr_enemy_count})")
         
         # 브로드캐스트 (UI 업데이트)
         await self.broadcast({
@@ -452,7 +452,7 @@ class ScenarioManager:
             "confidence": confidence
         })
         
-        # 🔒 한 번이라도 인식되면 → 즉시 락 및 피아식별
+        #  한 번이라도 인식되면 → 즉시 락 및 피아식별
         if self.ocr_ally_count > 0 or self.ocr_enemy_count > 0:
             # 더 많이 인식된 쪽으로 결정 (같으면 먼저 인식된 쪽)
             if self.ocr_ally_count > self.ocr_enemy_count:
@@ -463,10 +463,10 @@ class ScenarioManager:
                 # 동률 → 방금 인식된 쪽으로
                 final_faction = faction
             
-            # 🔒 OCR 결과 락
+            #  OCR 결과 락
             self.ocr_locked = True
             self.ocr_locked_faction = final_faction
-            print(f"🔒 OCR 결과 락: {final_faction} (ALLY={self.ocr_ally_count}, ENEMY={self.ocr_enemy_count})")
+            print(f" OCR 결과 락: {final_faction} (ALLY={self.ocr_ally_count}, ENEMY={self.ocr_enemy_count})")
             
             # OCR 실패 카운트 리셋 (TTS 플래그는 유지! - PASSWORD_CHECK에서 TTS 방지)
             self.ocr_fail_count = 0
@@ -506,8 +506,8 @@ class ScenarioManager:
         self.ocr_enemy_count = 0          # ENEMY 누적 카운트 리셋
         self.ocr_fail_count = 0
         self.ocr_fail_tts_played = False
-        self.ocr_locked = False           # 🔓 OCR 락 해제
-        self.ocr_locked_faction = None    # 🔓 락된 결과 초기화
+        self.ocr_locked = False           #  OCR 락 해제
+        self.ocr_locked_faction = None    #  락된 결과 초기화
         
         self._add_history("시나리오 리셋")
         
@@ -542,7 +542,7 @@ class ScenarioManager:
                 timeout=1
             )
             result = response.json()
-            print(f"🎯 OCR {'활성화' if enabled else '비활성화'}: {result}")
+            print(f" OCR {'활성화' if enabled else '비활성화'}: {result}")
         except Exception as e:
             print(f"OCR 상태 변경 실패: {e}")
 
@@ -557,7 +557,7 @@ class ScenarioManager:
             )
             result = response.json()
             action = "ON" if on else "OFF"
-            print(f"🎯 {device.upper()} {action}: {result.get('status')}")
+            print(f" {device.upper()} {action}: {result.get('status')}")
             self._add_history(f"{device.upper()} {action}")
         except Exception as e:
             print(f"디바이스 제어 실패 ({device}): {e}")
@@ -574,7 +574,7 @@ class ScenarioManager:
                     timeout=30.0  # TTS 재생 완료까지 쵩분한 타임아웃
                 )
                 result = response.json()
-                print(f"🔊 TTS (ElevenLabs): '{text}' → {result}")
+                print(f" TTS (ElevenLabs): '{text}' → {result}")
                 # TTS 재생 완료 후 사람이 반응할 여유 시간
                 await asyncio.sleep(0.5)
         except Exception as e:
@@ -586,7 +586,7 @@ class ScenarioManager:
                 import threading
                 thread = threading.Thread(target=tts.speak, args=(text,))
                 thread.start()
-                print(f"🔊 TTS (gTTS fallback): '{text}'")
+                print(f" TTS (gTTS fallback): '{text}'")
             except Exception as e2:
                 print(f"TTS fallback 오류: {e2}")
     
@@ -604,7 +604,7 @@ class ScenarioManager:
                     timeout=2.0
                 )
                 result = response.json()
-                print(f"🎤 음성 인식 시작: {result}")
+                print(f" 음성 인식 시작: {result}")
                 self._add_history("음성 인식 시작")
         except Exception as e:
             print(f"음성 인식 시작 실패: {e}")
@@ -614,7 +614,7 @@ class ScenarioManager:
         시나리오 전용 음성 인증 시작
         TTS("암구호! {질문}!") + 녹음 + STT + 시나리오 제출
         
-        ⚠️ /voice/scenario-request-auth 사용 (보이스 패널과 독립)
+         /voice/scenario-request-auth 사용 (보이스 패널과 독립)
         """
         import httpx
         
@@ -626,7 +626,7 @@ class ScenarioManager:
                     timeout=5.0
                 )
                 result = response.json()
-                print(f"🎤 [시나리오] 음성 인증 시작: {result}")
+                print(f" [시나리오] 음성 인증 시작: {result}")
                 self._add_history("음성 인증 시작")
         except Exception as e:
             print(f"[시나리오] 음성 인증 시작 실패: {e}")
@@ -642,7 +642,7 @@ class ScenarioManager:
                     timeout=2.0
                 )
                 result = response.json()
-                print(f"🔄 Voice 상태 리셋: {result}")
+                print(f" Voice 상태 리셋: {result}")
         except Exception as e:
             print(f"Voice 상태 리셋 실패: {e}")
 
@@ -748,7 +748,7 @@ class ScenarioManager:
         # 3. 사이렌 끝난 후 서보 OFF (8초 사이렌 + 여유 1초)
         await asyncio.sleep(9)
         await self._control_device("servo", False)
-        print("🔫 서보 OFF (사이렌 종료)")
+        print(" 서보 OFF (사이렌 종료)")
 
     async def _execute_robot_motion(self, motion_id: str):
         """로봇 모션 실행 (파일 기반 명령 전달)"""
@@ -806,7 +806,7 @@ class ScenarioManager:
         try:
             with open(command_file, 'w') as f:
                 json.dump(command, f)
-            print(f"🤖 로봇 모션 명령 전송: {motion['name']}")
+            print(f" 로봇 모션 명령 전송: {motion['name']}")
             self._add_history(f"로봇 모션: {motion['name']}")
         except Exception as e:
             print(f"로봇 모션 명령 전송 실패: {e}")
@@ -827,7 +827,7 @@ class ScenarioManager:
         try:
             with open(command_file, 'w') as f:
                 json.dump(command, f)
-            print("⏹️ 추적 중지 명령 전송")
+            print("⏹ 추적 중지 명령 전송")
             self._add_history("추적 중지")
         except Exception as e:
             print(f"추적 중지 명령 전송 실패: {e}")

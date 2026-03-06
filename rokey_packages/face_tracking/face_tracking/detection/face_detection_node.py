@@ -251,8 +251,8 @@ class HierarchicalIFFFilter:
     
     def get_stage_str(self):
         """Stage별 신념 상태 문자열"""
-        s1_status = "✓" if self.band_confirmed else "?"
-        s2_status = "✓" if self.text_confirmed else "?"
+        s1_status = "" if self.band_confirmed else "?"
+        s2_status = "" if self.text_confirmed else "?"
         return (f"S1{s1_status}[NB:{self.band_belief[0]:.0%}/B:{self.band_belief[1]:.0%}] "
                 f"S2{s2_status}[T:{self.text_belief[0]:.0%}/M:{self.text_belief[1]:.0%}]")
 
@@ -355,15 +355,15 @@ class FaceDetectionNode(Node):
             try:
                 self.iff_classifier = BandClassifier()
                 if self.iff_classifier.load_models():
-                    self.get_logger().info("✅ 피아식별(IFF) CNN 로드 완료")
+                    self.get_logger().info(" 피아식별(IFF) CNN 로드 완료")
                 else:
                     self.iff_classifier = None
-                    self.get_logger().warn("⚠️ IFF CNN 로드 실패 - 수동 모드")
+                    self.get_logger().warn(" IFF CNN 로드 실패 - 수동 모드")
             except Exception as e:
                 self.iff_classifier = None
-                self.get_logger().warn(f"⚠️ IFF CNN 초기화 실패: {e}")
+                self.get_logger().warn(f" IFF CNN 초기화 실패: {e}")
         else:
-            self.get_logger().info("ℹ️ IFF CNN 비활성화 - 수동 피아식별 모드")
+            self.get_logger().info("ℹ IFF CNN 비활성화 - 수동 피아식별 모드")
         
         # 구독자
         self.image_sub = self.create_subscription(
@@ -422,13 +422,13 @@ class FaceDetectionNode(Node):
         """시작 정보 출력"""
         stats = self.detector.get_stats()
         self.get_logger().info("=" * 60)
-        self.get_logger().info("🎥 Face Detection Node 시작!")
+        self.get_logger().info(" Face Detection Node 시작!")
         self.get_logger().info(f"  Device: {stats['device'].upper()}")
-        self.get_logger().info(f"  TensorRT: {'✅' if stats['tensorrt'] else '❌'}")
-        self.get_logger().info(f"  FP16: {'✅' if stats['fp16'] else '❌'}")
-        self.get_logger().info(f"  ROI Tracking: {'✅' if stats['roi_tracking'] else '❌'}")
-        self.get_logger().info(f"  Scenario Trigger: {'✅' if self.scenario_enabled else '❌'}")
-        self.get_logger().info(f"  Flipped Image: {'✅' if self.use_flipped else '❌'}")
+        self.get_logger().info(f"  TensorRT: {'' if stats['tensorrt'] else ''}")
+        self.get_logger().info(f"  FP16: {'' if stats['fp16'] else ''}")
+        self.get_logger().info(f"  ROI Tracking: {'' if stats['roi_tracking'] else ''}")
+        self.get_logger().info(f"  Scenario Trigger: {'' if self.scenario_enabled else ''}")
+        self.get_logger().info(f"  Flipped Image: {'' if self.use_flipped else ''}")
         self.get_logger().info("  Topics:")
         self.get_logger().info(f"    Sub: {self.image_topic}")
         self.get_logger().info("    Sub: /joint_tracking/state")
@@ -451,7 +451,7 @@ class FaceDetectionNode(Node):
         
         if self.tracking_active != was_tracking:
             if self.tracking_active:
-                self.get_logger().info("🎯 추적 모드 활성화 - 시나리오 트리거 대기")
+                self.get_logger().info(" 추적 모드 활성화 - 시나리오 트리거 대기")
                 # 추적 시작 시 시나리오 상태 리셋
                 self.scenario_triggered = False
                 self.detection_stable_count = 0
@@ -459,9 +459,9 @@ class FaceDetectionNode(Node):
                 if self.iff_locked:
                     self.iff_locked = False
                     self.iff_locked_result = None
-                    self.get_logger().info("🔓 IFF 락 해제 (새 추적 시작)")
+                    self.get_logger().info(" IFF 락 해제 (새 추적 시작)")
             else:
-                self.get_logger().info("⏸️ 추적 모드 비활성화")
+                self.get_logger().info("⏸ 추적 모드 비활성화")
     
     def trigger_scenario(self):
         """시나리오 API 호출 (비동기) - 추적 중일 때만"""
@@ -480,7 +480,7 @@ class FaceDetectionNode(Node):
                     timeout=2.0
                 )
                 if response.status_code == 200:
-                    self.get_logger().info("🚨 시나리오 트리거됨! /scenario/detect 호출 완료")
+                    self.get_logger().info(" 시나리오 트리거됨! /scenario/detect 호출 완료")
                 else:
                     self.get_logger().warn(f"시나리오 API 응답 오류: {response.status_code}")
                     return
@@ -499,11 +499,11 @@ class FaceDetectionNode(Node):
                     if identify_response.status_code == 200:
                         iff_str = "아군" if is_ally else "적군"
                         self.get_logger().info(
-                            f"🎖️ 자동 피아식별: {iff_str} "
+                            f" 자동 피아식별: {iff_str} "
                             f"(완장: {iff_result['band']}, 신뢰도: {iff_result['conf']:.1%})"
                         )
                 else:
-                    self.get_logger().info("👁️ 완장 미감지 - 수동 피아식별 대기")
+                    self.get_logger().info(" 완장 미감지 - 수동 피아식별 대기")
                     
             except requests.exceptions.RequestException as e:
                 self.get_logger().warn(f"시나리오 API 호출 실패 (서버 미실행?): {e}")
@@ -515,9 +515,9 @@ class FaceDetectionNode(Node):
         if self.last_iff_result is not None:
             self.iff_locked = True
             self.iff_locked_result = self.last_iff_result.copy()
-            self.get_logger().info(f"🔒 IFF 결과 락: {self.iff_locked_result['iff']} (Conf: {self.iff_locked_result['conf']:.0%})")
+            self.get_logger().info(f" IFF 결과 락: {self.iff_locked_result['iff']} (Conf: {self.iff_locked_result['conf']:.0%})")
         
-        self.get_logger().info("🎯 [추적 중] 얼굴 감지 안정화 - 시나리오 트리거!")
+        self.get_logger().info(" [추적 중] 얼굴 감지 안정화 - 시나리오 트리거!")
         
         # 백그라운드 스레드에서 API 호출 (블로킹 방지)
         thread = threading.Thread(target=call_api, daemon=True)
@@ -551,7 +551,7 @@ class FaceDetectionNode(Node):
             
             # 디버그 로그: CNN raw → 필터 신념 상태
             self.get_logger().info(
-                f"🔍 CNN[NB:{stage1['no_band']:.0%}/B:{stage1['has_band']:.0%}|T:{stage2['tongil']:.0%}/M:{stage2['melgong']:.0%}] → "
+                f" CNN[NB:{stage1['no_band']:.0%}/B:{stage1['has_band']:.0%}|T:{stage2['tongil']:.0%}/M:{stage2['melgong']:.0%}] → "
                 f"{self.iff_belief_filter.get_stage_str()} → "
                 f"{self.iff_belief_filter.get_belief_str()}"
             )
@@ -580,7 +580,7 @@ class FaceDetectionNode(Node):
             # 확정 시 로그
             if is_confirmed and belief_result['confirmed_count'] == 1:
                 self.get_logger().info(
-                    f"✅ 베이지안 확정: IFF={iff_state}, Conf={confidence:.0%}"
+                    f" 베이지안 확정: IFF={iff_state}, Conf={confidence:.0%}"
                 )
             
             self.last_iff_result = result
@@ -662,7 +662,7 @@ class FaceDetectionNode(Node):
                     color = iff_colors.get(iff_str, (128, 128, 128))
                     
                     # 확정 상태 표시 (베이지안)
-                    stable_mark = "✓확정" if is_stable else "수렴중"
+                    stable_mark = "확정" if is_stable else "수렴중"
                     cv2.putText(frame, f"IFF: {label} ({conf:.0%}) {stable_mark}",
                                (detection.x1, detection.y2 + 25),
                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
@@ -696,8 +696,8 @@ class FaceDetectionNode(Node):
                     if self.iff_locked:
                         self.iff_locked = False
                         self.iff_locked_result = None
-                        self.get_logger().info("🔓 IFF 락 해제")
-                    self.get_logger().info("👁️ 얼굴 미감지 - 베이지안 필터 및 시나리오 리셋")
+                        self.get_logger().info(" IFF 락 해제")
+                    self.get_logger().info(" 얼굴 미감지 - 베이지안 필터 및 시나리오 리셋")
         
         # FPS 계산
         self.frame_count += 1

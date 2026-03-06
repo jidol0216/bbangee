@@ -179,7 +179,7 @@ class JointTrackingNode(Node):
         # 제어권 요청
         if cmd == 'take_control':
             self.control_source = 'web'
-            self.get_logger().info('🌐 제어권: WEB으로 전환')
+            self.get_logger().info(' 제어권: WEB으로 전환')
             return
         
         # 웹 제어권이 아니면 무시
@@ -189,7 +189,7 @@ class JointTrackingNode(Node):
         
         # 명령 큐에 저장 (main 루프에서 처리)
         self.pending_web_command = cmd
-        self.get_logger().info(f'🌐 웹 명령 수신: {cmd}')
+        self.get_logger().info(f' 웹 명령 수신: {cmd}')
     
     def _publish_state(self):
         """현재 상태를 토픽으로 발행 (JSON 형식)"""
@@ -208,7 +208,7 @@ class JointTrackingNode(Node):
     def _print_startup_info(self):
         mode_str = "직접 제어" if self.control_mode == 1 else "최적 제어"
         self.get_logger().info("=" * 60)
-        self.get_logger().info("🎯 Joint-Space Face Tracking Node")
+        self.get_logger().info(" Joint-Space Face Tracking Node")
         self.get_logger().info(f"  Robot: {self.robot_id} / {self.robot_model}")
         self.get_logger().info(f"  Mode: {self.control_mode} ({mode_str})")
         self.get_logger().info(f"  J1: gain={self.j1_gain}, vel={self.j1_vel_limit}°/s")
@@ -241,7 +241,7 @@ class JointTrackingNode(Node):
         
         # 디버그 로그 (원본 복원)
         self.get_logger().info(
-            f"📡 마커수신 EKF={'ON' if self.ekf else 'OFF'} | "
+            f" 마커수신 EKF={'ON' if self.ekf else 'OFF'} | "
             f"Raw:({raw_pos[0]:.0f},{raw_pos[1]:.0f}) → Filtered:({filtered_pos[0]:.0f},{filtered_pos[1]:.0f})mm",
             throttle_duration_sec=2.0)
         
@@ -392,9 +392,9 @@ def main():
     # DSR 함수 import
     try:
         from DSR_ROBOT2 import movej, amovej, mwait
-        print("✅ DSR 모듈 import 성공")
+        print(" DSR 모듈 import 성공")
     except ImportError as e:
-        print(f"❌ DSR 모듈 import 실패: {e}")
+        print(f" DSR 모듈 import 실패: {e}")
         sys.exit(1)
     
     # Executor
@@ -410,32 +410,32 @@ def main():
         nonlocal node
         
         if cmd == 'h' or cmd == 'home':
-            print(f"\n🏠 [{source}] 홈 위치로 이동...")
+            print(f"\n [{source}] 홈 위치로 이동...")
             node.state = "IDLE"
             node.locked_target_joints = None
             movej(HOME_JOINTS, vel=30, acc=30)
             mwait()
-            print("✅ 홈 도착")
+            print(" 홈 도착")
             
         elif cmd == 'r' or cmd == 'ready':
-            print(f"\n📍 [{source}] 시작 위치로 이동...")
+            print(f"\n [{source}] 시작 위치로 이동...")
             node.state = "IDLE"
             node.locked_target_joints = None
             movej(START_JOINTS, vel=30, acc=30)
             mwait()
-            print("✅ 시작 위치 도착")
+            print(" 시작 위치 도착")
             
         elif cmd == '1' or cmd == 'mode1':
             node.control_mode = 1
-            print(f"\n🔧 [{source}] 모드 1: 직접 제어")
+            print(f"\n [{source}] 모드 1: 직접 제어")
             
         elif cmd == '2' or cmd == 'mode2':
             node.control_mode = 2
-            print(f"\n🔧 [{source}] 모드 2: 최적 제어")
+            print(f"\n [{source}] 모드 2: 최적 제어")
             
         elif cmd == 's' or cmd == 'start':
             if node.state == "IDLE":
-                print(f"\n📍 [{source}] 시작 위치로 이동...")
+                print(f"\n [{source}] 시작 위치로 이동...")
                 movej(START_JOINTS, vel=30, acc=30)
                 mwait()
                 
@@ -448,16 +448,16 @@ def main():
                         break
                 
                 mode_str = "직접 제어" if node.control_mode == 1 else "최적 제어"
-                print(f"🎯 [{source}] 추적 시작! (모드 {node.control_mode}: {mode_str})")
+                print(f" [{source}] 추적 시작! (모드 {node.control_mode}: {mode_str})")
                 node.state = "TRACKING"
                 node.waiting_start_time = time.time()
             else:
-                print(f"\n⏸️ [{source}] 추적 중지")
+                print(f"\n⏸ [{source}] 추적 중지")
                 node.state = "IDLE"
                 node.locked_target_joints = None
                 
         elif cmd == 'stop':
-            print(f"\n⏸️ [{source}] 추적 중지")
+            print(f"\n⏸ [{source}] 추적 중지")
             node.state = "IDLE"
             node.locked_target_joints = None
             node.speed_multiplier = 1.0  # 속도 배율 초기화
@@ -467,18 +467,18 @@ def main():
             try:
                 multiplier = float(cmd.split(':')[1])
                 node.speed_multiplier = max(0.5, min(3.0, multiplier))  # 0.5~3.0 범위
-                print(f"\n⚡ [{source}] 추적 속도 변경: {node.speed_multiplier}배")
+                print(f"\n [{source}] 추적 속도 변경: {node.speed_multiplier}배")
             except:
-                print(f"\n❌ 잘못된 속도 값: {cmd}")
+                print(f"\n 잘못된 속도 값: {cmd}")
                 
         elif cmd == 'j6_rotate':
             # J6 180도 회전 (그리퍼/카메라 방향 전환)
             if node.state == "TRACKING":
-                print(f"\n⚠️ [{source}] 추적 중에는 J6 회전 불가")
+                print(f"\n [{source}] 추적 중에는 J6 회전 불가")
                 return
             
             if not node.joints_received:
-                print(f"\n❌ [{source}] 조인트 상태 미수신")
+                print(f"\n [{source}] 조인트 상태 미수신")
                 return
             
             # 현재 조인트 복사
@@ -503,15 +503,15 @@ def main():
             elif target[5] < -350.0:
                 target[5] += 360.0
             
-            print(f"\n📷 [{source}] J6 회전: {direction} → {target[5]:.1f}°")
+            print(f"\n [{source}] J6 회전: {direction} → {target[5]:.1f}°")
             print(f"    현재: {[f'{j:.1f}' for j in node.current_joints]}")
             print(f"    목표: {[f'{j:.1f}' for j in target]}")
             
             movej(target, vel=30, acc=30)
-            print(f"✅ J6 회전 완료")
+            print(f" J6 회전 완료")
     
     print("\n" + "="*60)
-    print("🎯 Joint-Space Face Tracking")
+    print(" Joint-Space Face Tracking")
     print(f"  현재 모드: {node.control_mode} ({'직접 제어' if node.control_mode == 1 else '최적 제어'})")
     print(f"  제어권: {node.control_source}")
     print("  's': 추적 시작/중지, 'h': 홈, 'r': 시작위치")
@@ -540,7 +540,7 @@ def main():
                 elif key == 't':
                     # 터미널 제어권 가져오기
                     node.control_source = 'terminal'
-                    print(f"\n🖥️ 제어권: TERMINAL로 전환")
+                    print(f"\n 제어권: TERMINAL로 전환")
                 elif node.control_source == 'terminal':
                     # 터미널 제어권일 때만 명령 처리
                     if key in ['h', '1', '2', 's', 'r']:
@@ -548,7 +548,7 @@ def main():
                     else:
                         print(f"알 수 없는 명령: {key}")
                 else:
-                    print(f"⚠️ 현재 제어권이 WEB입니다. 't'를 눌러 터미널 제어권을 가져오세요.")
+                    print(f" 현재 제어권이 WEB입니다. 't'를 눌러 터미널 제어권을 가져오세요.")
             
             # ========================================
             # 상태 머신
@@ -582,7 +582,7 @@ def main():
                             amovej(target, vel=vel, acc=100.0)
                             
                             node.get_logger().info(
-                                f"🎯 err:[{errors[0]:+.1f},{errors[3]:+.1f},{errors[4]:+.1f}]° vel:{vel:.0f}",
+                                f" err:[{errors[0]:+.1f},{errors[3]:+.1f},{errors[4]:+.1f}]° vel:{vel:.0f}",
                                 throttle_duration_sec=0.1)
                         
                         node.waiting_start_time = current_time
@@ -596,7 +596,7 @@ def main():
             
             # RETURN_HOME
             elif node.state == "RETURN_HOME":
-                node.get_logger().info("🏠 시작 위치로 복귀...")
+                node.get_logger().info(" 시작 위치로 복귀...")
                 movej(START_JOINTS, vel=30, acc=30)
                 mwait()
                 node.state = "TRACKING"

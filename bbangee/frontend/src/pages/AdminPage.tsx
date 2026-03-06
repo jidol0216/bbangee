@@ -20,7 +20,7 @@ export default function AdminPage({ onLogout }: Props) {
     rank: "",
   });
 
-  /** 🔁 DB 데이터 load */
+  /**  DB 데이터 load */
   const load = async () => {
     const data = await fetchPeople();
     setPeople(data);
@@ -30,7 +30,7 @@ export default function AdminPage({ onLogout }: Props) {
     load();
   }, []);
 
-  /** ➕ 등록 핸들러 */
+  /**  등록 핸들러 */
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -50,7 +50,7 @@ export default function AdminPage({ onLogout }: Props) {
     await load();
   };
 
-  /** ❌ 삭제 핸들러 */
+  /**  삭제 핸들러 */
   const handleDelete = async (serial: string) => {
     if (!window.confirm(`정말 ${serial} 인원을 삭제할까요?`)) return;
 

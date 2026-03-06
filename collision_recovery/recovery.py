@@ -111,10 +111,10 @@ class RecoveryManager:
         
         res = self._call(self.control_client, req, "SetRobotControl(RESET_SAFE_STOP)")
         if res and res.success:
-            self.log("✓ SAFE_STOP 리셋 성공")
+            self.log(" SAFE_STOP 리셋 성공")
             return True
         else:
-            self.log("✗ SAFE_STOP 리셋 실패")
+            self.log(" SAFE_STOP 리셋 실패")
             return False
     
     def enter_recovery_mode(self) -> bool:
@@ -135,10 +135,10 @@ class RecoveryManager:
         
         res = self._call(self.safety_client, req, "SetSafetyMode(ENTER)")
         if res and res.success:
-            self.log("✓ RECOVERY ENTER 성공")
+            self.log(" RECOVERY ENTER 성공")
             return True
         else:
-            self.log("✗ RECOVERY ENTER 실패")
+            self.log(" RECOVERY ENTER 실패")
             return False
     
     def jog_up(self, duration: float = 1.5) -> bool:
@@ -154,7 +154,7 @@ class RecoveryManager:
         self.log("Jog로 Z축 위로 이동 중...")
         
         if not self._wait_for(self.jog_client, "Jog", timeout=1.0):
-            self.log("⚠️ Jog 서비스 없음")
+            self.log(" Jog 서비스 없음")
             return False
         
         # Z축 위로 이동
@@ -165,7 +165,7 @@ class RecoveryManager:
         
         res = self._call(self.jog_client, req, "Jog(Z+)")
         if res and res.success:
-            self.log(f"✓ Jog 시작 - {duration}초 동안 위로 이동")
+            self.log(f" Jog 시작 - {duration}초 동안 위로 이동")
             time.sleep(duration)
             
             # Jog 정지
@@ -174,10 +174,10 @@ class RecoveryManager:
             req_stop.move_reference = JOG_REFERENCE["BASE"]
             req_stop.speed = 0.0  # 정지
             self._call(self.jog_client, req_stop, "Jog(STOP)")
-            self.log("✓ Jog 정지")
+            self.log(" Jog 정지")
             return True
         else:
-            self.log("⚠️ Jog 실패")
+            self.log(" Jog 실패")
             return False
     
     def complete_recovery(self) -> bool:
@@ -198,10 +198,10 @@ class RecoveryManager:
         
         res = self._call(self.safety_client, req, "SetSafetyMode(COMPLETE)")
         if res and res.success:
-            self.log("✓ RECOVERY 완료")
+            self.log(" RECOVERY 완료")
             return True
         else:
-            self.log("✗ RECOVERY 완료 실패")
+            self.log(" RECOVERY 완료 실패")
             return False
     
     def exit_recovery_mode(self) -> bool:
@@ -221,10 +221,10 @@ class RecoveryManager:
         
         res = self._call(self.control_client, req, "SetRobotControl(RESET_RECOVERY)")
         if res and res.success:
-            self.log("✓ RECOVERY 모드 해제 성공")
+            self.log(" RECOVERY 모드 해제 성공")
             return True
         else:
-            self.log("✗ RECOVERY 모드 해제 실패")
+            self.log(" RECOVERY 모드 해제 실패")
             return False
     
     def servo_on(self) -> bool:
@@ -244,10 +244,10 @@ class RecoveryManager:
         
         res = self._call(self.control_client, req, "SetRobotControl(SERVO_ON)")
         if res and res.success:
-            self.log("✓ Servo ON 성공")
+            self.log(" Servo ON 성공")
             return True
         else:
-            self.log("✗ Servo ON 실패")
+            self.log(" Servo ON 실패")
             return False
     
     # ========================================
@@ -282,7 +282,7 @@ class RecoveryManager:
             
             # 이미 STANDBY면 성공
             if self.state.is_standby(current_state):
-                self.log("✅ 이미 STANDBY 상태!")
+                self.log(" 이미 STANDBY 상태!")
                 return True
             
             # 1. SAFE_STOP 리셋
@@ -321,7 +321,7 @@ class RecoveryManager:
             # 결과 확인
             current_state = self.state.get_state()
             if self.state.is_standby(current_state):
-                self.log("✅ 복구 성공! STANDBY 상태")
+                self.log(" 복구 성공! STANDBY 상태")
                 return True
             
             self.log(f"아직 복구 안됨, 재시도... (상태: {state_name(current_state)})")
@@ -335,5 +335,5 @@ class RecoveryManager:
         if self.state.is_standby(final_state):
             return True
         else:
-            self.log(f"⚠️ 복구 실패: {state_name(final_state)}")
+            self.log(f" 복구 실패: {state_name(final_state)}")
             return False

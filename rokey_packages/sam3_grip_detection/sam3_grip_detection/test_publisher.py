@@ -42,7 +42,7 @@ class TestPublisher(Node):
         self.timer = self.create_timer(timer_period, self.publish_callback)
         
         self.get_logger().info("=" * 60)
-        self.get_logger().info("🧪 Test Publisher for Go Pick")
+        self.get_logger().info(" Test Publisher for Go Pick")
         self.get_logger().info("=" * 60)
         self.get_logger().info("")
         self.get_logger().info(f"발행 좌표 (카메라 좌표계):")
@@ -91,7 +91,7 @@ class TestPublisher(Node):
         self.width_pub.publish(width_msg)
         
         self.get_logger().info(
-            f"📤 발행: ({self.x:.3f}, {self.y:.3f}, {self.z:.3f}) m, "
+            f" 발행: ({self.x:.3f}, {self.y:.3f}, {self.z:.3f}) m, "
             f"width={self.gripper_width:.1f} mm",
             throttle_duration_sec=2.0
         )

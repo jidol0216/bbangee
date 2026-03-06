@@ -162,7 +162,7 @@ class RobotController(Node):
             # 추적 속도 증가 명령
             multiplier = data.get('speed_multiplier', 1.5)
             self._send_web_command(f'speed:{multiplier}')
-            self.get_logger().info(f'⚡ 추적 속도 증가: {multiplier}배')
+            self.get_logger().info(f' 추적 속도 증가: {multiplier}배')
         else:
             self.get_logger().warn(f'Unknown command: {cmd}')
 
@@ -178,7 +178,7 @@ class RobotController(Node):
         velocity = data.get('velocity', 30.0)
         acceleration = data.get('acceleration', 25.0)
         
-        self.get_logger().info(f'🤖 모션 실행: {motion_name} ({motion_id})')
+        self.get_logger().info(f' 모션 실행: {motion_name} ({motion_id})')
         self.get_logger().info(f'   Joints: {joints}')
         
         if not self.move_joint_client.wait_for_service(timeout_sec=2.0):
@@ -196,7 +196,7 @@ class RobotController(Node):
         request.sync_type = 0  # 비동기 실행 (UI 블로킹 방지)
         
         future = self.move_joint_client.call_async(request)
-        self.get_logger().info(f'✅ 모션 "{motion_name}" 명령 전송 완료')
+        self.get_logger().info(f' 모션 "{motion_name}" 명령 전송 완료')
 
     def _move_to_home(self):
         """홈 위치로 이동"""
@@ -264,15 +264,15 @@ class RobotController(Node):
         
         def move_sequence():
             # 1. 홈 위치로 이동
-            self.get_logger().info('📍 1/2: 홈 위치로 이동...')
+            self.get_logger().info(' 1/2: 홈 위치로 이동...')
             self._move_joint_sync(HOME_JOINTS)
             
             # 2. 시작 위치로 이동 (J6=0°)
-            self.get_logger().info('📍 2/2: 시작 위치로 이동 (J6=0°)...')
+            self.get_logger().info(' 2/2: 시작 위치로 이동 (J6=0°)...')
             self._move_joint_sync(START_JOINTS)
             
             self.j6_rotated = True
-            self.get_logger().info('✅ 시작 위치 도착 완료!')
+            self.get_logger().info(' 시작 위치 도착 완료!')
         
         # 백그라운드에서 실행 (UI 블로킹 방지)
         thread = threading.Thread(target=move_sequence)

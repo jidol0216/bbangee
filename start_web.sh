@@ -37,7 +37,7 @@ cleanup() {
     pkill -f "uvicorn app.main:app" 2>/dev/null
     pkill -f "vite" 2>/dev/null
     
-    echo -e "${GREEN}✅ 모든 서버 종료 완료!${NC}"
+    echo -e "${GREEN} 모든 서버 종료 완료!${NC}"
     exit 0
 }
 
@@ -75,14 +75,14 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  서버 실행 완료!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "  📡 백엔드 API:  http://localhost:8000"
-echo -e "  🌐 프론트엔드:  http://localhost:5173"
+echo -e "   백엔드 API:  http://localhost:8000"
+echo -e "   프론트엔드:  http://localhost:5173"
 echo ""
-echo -e "  📋 로그 확인:"
+echo -e "   로그 확인:"
 echo -e "     tail -f /tmp/backend.log"
 echo -e "     tail -f /tmp/frontend.log"
 echo ""
-echo -e "${YELLOW}  ⏹️  Ctrl+C 를 누르면 모든 서버가 자동 종료됩니다${NC}"
+echo -e "${YELLOW}  ⏹  Ctrl+C 를 누르면 모든 서버가 자동 종료됩니다${NC}"
 echo ""
 
 # 프로세스가 살아있는 동안 대기

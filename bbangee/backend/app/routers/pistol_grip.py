@@ -52,7 +52,7 @@ def pistol_grip(req: GripRequest = GripRequest()):
     })
     return {
         "success": True,
-        "message": "🔫 권총 파지 명령 전송",
+        "message": " 권총 파지 명령 전송",
         "action": "grip",
     }
 
@@ -71,7 +71,7 @@ def pistol_holster(req: GripRequest = GripRequest()):
     })
     return {
         "success": True,
-        "message": "🔫 권총 거치 명령 전송",
+        "message": " 권총 거치 명령 전송",
         "action": "holster",
     }
 

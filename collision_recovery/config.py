@@ -26,12 +26,12 @@ HOME_POSITION = [0.0, -30.0, 100.0, 70.0, 90.0, 0.0]  # 카메라 높이 올림
 # GetRobotState 서비스 응답값
 STATE_CODES = {
     0: "INITIALIZING",     # 초기화 중
-    1: "STANDBY",          # 대기 (정상) ✅
+    1: "STANDBY",          # 대기 (정상) 
     2: "MOVING",           # 동작 중
     3: "SAFE_OFF",         # 서보 OFF
     4: "TEACHING",         # 티칭 모드
-    5: "SAFE_STOP",        # 충돌 감지 ⚠️ (노란 링)
-    6: "EMERGENCY_STOP",   # 비상 정지 🔴 (빨간 링)
+    5: "SAFE_STOP",        # 충돌 감지  (노란 링)
+    6: "EMERGENCY_STOP",   # 비상 정지  (빨간 링)
     7: "HOMING",           # 원점 복귀 중
     8: "RECOVERY",         # 복구 모드
     9: "SAFE_STOP2",       # 충돌 감지 2

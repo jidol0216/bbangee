@@ -42,7 +42,7 @@ class IMUVerifier(Node):
         self.sample_count = 0
         self.max_samples = 100
         
-        self.get_logger().info("🎯 IMU Verifier 시작...")
+        self.get_logger().info(" IMU Verifier 시작...")
         self.get_logger().info("   카메라를 정지 상태로 유지하세요")
         
     def imu_callback(self, msg: Imu):
@@ -82,11 +82,11 @@ class IMUVerifier(Node):
         gravity_direction = accel_mean / gravity_magnitude
         
         self.get_logger().info("=" * 50)
-        self.get_logger().info("📊 IMU 분석 결과 (100 샘플 평균)")
+        self.get_logger().info(" IMU 분석 결과 (100 샘플 평균)")
         self.get_logger().info("=" * 50)
         
         # 가속도 (중력)
-        self.get_logger().info(f"🔹 가속도 (IMU 프레임):")
+        self.get_logger().info(f" 가속도 (IMU 프레임):")
         self.get_logger().info(f"   X: {accel_mean[0]:+.3f} m/s² (±{accel_std[0]:.3f})")
         self.get_logger().info(f"   Y: {accel_mean[1]:+.3f} m/s² (±{accel_std[1]:.3f})")
         self.get_logger().info(f"   Z: {accel_mean[2]:+.3f} m/s² (±{accel_std[2]:.3f})")
@@ -94,12 +94,12 @@ class IMUVerifier(Node):
         
         # 자이로 (정지 시 ~0)
         gyro_magnitude = np.linalg.norm(gyro_mean)
-        self.get_logger().info(f"🔹 각속도:")
+        self.get_logger().info(f" 각속도:")
         self.get_logger().info(f"   크기: {gyro_magnitude:.4f} rad/s (정지: ~0)")
         
         # 카메라 방향 추정
         self.get_logger().info("")
-        self.get_logger().info("📐 카메라 방향 분석:")
+        self.get_logger().info(" 카메라 방향 분석:")
         
         # IMU 프레임에서 어느 축이 중력(아래)을 향하는지
         max_axis = np.argmax(np.abs(accel_mean))
@@ -134,7 +134,7 @@ class IMUVerifier(Node):
             r = tf.transform.rotation
             
             self.get_logger().info("")
-            self.get_logger().info("🔹 TF: base_link → camera_link")
+            self.get_logger().info(" TF: base_link → camera_link")
             self.get_logger().info(f"   위치: X={t.x*1000:.1f}mm, Y={t.y*1000:.1f}mm, Z={t.z*1000:.1f}mm")
             
             # Quaternion to Euler

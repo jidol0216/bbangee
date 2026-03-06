@@ -15,19 +15,19 @@ def get_db():
         db.close()
 
 
-# 🔹 전체 로그 조회
+#  전체 로그 조회
 @router.get("/logs", response_model=list[AccessLogResponse])
 def logs(db: Session = Depends(get_db)):
     return crud.get_logs(db)
 
 
-# 🔹 특정 군번 로그 조회 (프론트에서 요청하는 URL)
+#  특정 군번 로그 조회 (프론트에서 요청하는 URL)
 @router.get("/logs/{serial}", response_model=list[AccessLogResponse])
 def logs_by_serial(serial: str, db: Session = Depends(get_db)):
     return crud.get_logs_by_serial(db, serial)
 
 
-# 🔹 체크인
+#  체크인
 @router.post("/{serial}/entry", response_model=AccessLogResponse)
 def entry(serial: str, db: Session = Depends(get_db)):
     log, err = crud.mark_entry(db, serial)
@@ -41,7 +41,7 @@ def entry(serial: str, db: Session = Depends(get_db)):
     return log
 
 
-# 🔹 체크아웃
+#  체크아웃
 @router.post("/{serial}/exit", response_model=AccessLogResponse)
 def exit(serial: str, db: Session = Depends(get_db)):
     log, err = crud.mark_exit(db, serial)

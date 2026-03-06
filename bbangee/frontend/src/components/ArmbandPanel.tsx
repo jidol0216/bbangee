@@ -40,8 +40,8 @@ interface ArmbandStatus {
 
 // 진영별 스타일
 const FACTION_STYLES: Record<string, { label: string; class: string; icon: string }> = {
-  "ALLY": { label: "아군", class: "ally", icon: "✓" },
-  "ENEMY": { label: "적군", class: "enemy", icon: "✗" },
+  "ALLY": { label: "아군", class: "ally", icon: "" },
+  "ENEMY": { label: "적군", class: "enemy", icon: "" },
   "UNKNOWN": { label: "미확인", class: "unknown", icon: "?" },
   "ERROR": { label: "오류", class: "error", icon: "!" },
 };
@@ -101,7 +101,7 @@ export default function ArmbandPanel() {
   return (
     <div className="panel armband-panel">
       <div className="panel-header">
-        <span className="panel-title">🎯 ARMBAND DETECT</span>
+        <span className="panel-title"> ARMBAND DETECT</span>
         <span 
           className={`panel-tag ${status?.running ? "online" : "offline"}`}
           onClick={reconnect}
@@ -116,7 +116,7 @@ export default function ArmbandPanel() {
         <div className={`armband-status ${isDetected ? "detected" : "searching"}`}>
           {isDetected ? (
             <>
-              <span className="status-icon">✓</span>
+              <span className="status-icon"></span>
               <span className="status-text">완장 감지됨</span>
             </>
           ) : (

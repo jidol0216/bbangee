@@ -17,13 +17,13 @@ interface ScenarioStatus {
 }
 
 const STATE_INFO: Record<ScenarioState, { label: string; icon: string; color: string }> = {
-  IDLE: { label: "초기 경계", icon: "🛡️", color: "#4a9eff" },
-  DETECTED: { label: "접근자 감지", icon: "👁️", color: "#ffa500" },
-  PASSWORD_CHECK: { label: "암구호 확인", icon: "🔒", color: "#9370db" },
-  ALLY_PASS: { label: "아군 통과", icon: "✅", color: "#37ff9f" },
-  ALLY_ALERT: { label: "아군 경고", icon: "⚠️", color: "#ff9500" },
-  ENEMY_CRITICAL: { label: "기밀유출!", icon: "🚨", color: "#ff0000" },
-  ENEMY_ENGAGE: { label: "적대 대응", icon: "🔴", color: "#ff4444" },
+  IDLE: { label: "초기 경계", icon: "", color: "#4a9eff" },
+  DETECTED: { label: "접근자 감지", icon: "", color: "#ffa500" },
+  PASSWORD_CHECK: { label: "암구호 확인", icon: "", color: "#9370db" },
+  ALLY_PASS: { label: "아군 통과", icon: "", color: "#37ff9f" },
+  ALLY_ALERT: { label: "아군 경고", icon: "", color: "#ff9500" },
+  ENEMY_CRITICAL: { label: "기밀유출!", icon: "", color: "#ff0000" },
+  ENEMY_ENGAGE: { label: "적대 대응", icon: "", color: "#ff4444" },
 };
 
 export default function ScenarioPanel() {
@@ -76,8 +76,8 @@ export default function ScenarioPanel() {
         setPasswordResult({
           correct: data.is_correct,
           message: data.is_correct 
-            ? `✅ 정답! "${spokenPassword}" 암구호 인증 성공` 
-            : `❌ 오답! "${spokenPassword}" 암구호 인증 실패`
+            ? ` 정답! "${spokenPassword}" 암구호 인증 성공` 
+            : ` 오답! "${spokenPassword}" 암구호 인증 실패`
         });
         setPopup({ show: true, title: data.message, type: "result" });
       }
@@ -89,7 +89,7 @@ export default function ScenarioPanel() {
   // 상태가 DETECTED일 때 자동으로 피아식별 팝업 표시 (비활성화)
   // useEffect(() => {
   //   if (status?.state === "DETECTED" && !popup?.show) {
-  //     setPopup({ show: true, title: "⚠️ 접근자 감지", type: "identify" });
+  //     setPopup({ show: true, title: " 접근자 감지", type: "identify" });
   //   }
   // }, [status?.state]);
 
@@ -103,7 +103,7 @@ export default function ScenarioPanel() {
       if (res.data) {
         setPasswordResult({
           correct: res.data.is_correct,
-          message: res.data.is_correct ? `✅ 정답! "${passwordInput}"` : `❌ 오답! "${passwordInput}" (정답: "${currentResponse}")`
+          message: res.data.is_correct ? ` 정답! "${passwordInput}"` : ` 오답! "${passwordInput}" (정답: "${currentResponse}")`
         });
       }
     } catch (e) { /* ignore */ }
@@ -155,7 +155,7 @@ export default function ScenarioPanel() {
   return (
     <div className="panel scenario-panel">
       <div className="panel-header">
-        <span className="panel-title">📋 SCENARIO</span>
+        <span className="panel-title"> SCENARIO</span>
         <span className="panel-tag" style={{ background: info.color, color: "#000" }}>{info.icon} {info.label}</span>
       </div>
 
@@ -165,7 +165,7 @@ export default function ScenarioPanel() {
           {/* 시작 노드 */}
           <div className={`tree-node start ${isActive("IDLE") ? "active" : isPassed("IDLE") ? "passed" : ""}`}
                onClick={s === "IDLE" && !loading ? handleDetect : undefined}>
-            <span className="node-icon">🛡️</span>
+            <span className="node-icon"></span>
             <span className="node-label">초기 경계 (Low Ready)</span>
             {s === "IDLE" && <span className="node-action">▶ 클릭: 감지 시뮬레이션</span>}
           </div>
@@ -174,7 +174,7 @@ export default function ScenarioPanel() {
 
           {/* 감지 노드 */}
           <div className={`tree-node detect ${isActive("DETECTED") ? "active" : isPassed("DETECTED") ? "passed" : ""}`}>
-            <span className="node-icon">👁️</span>
+            <span className="node-icon"></span>
             <span className="node-label">접근자 감지</span>
             <span className="node-sub">"정지! 손들어! 암구호!"</span>
           </div>
@@ -193,21 +193,21 @@ export default function ScenarioPanel() {
               <div className="branch-line left" />
               <div className={`tree-node small ${s === "DETECTED" ? "clickable" : ""} ${p === "ALLY" ? "active" : ""}`}
                    onClick={s === "DETECTED" ? () => handleIdentify(true) : undefined}>
-                <span>👤</span>
+                <span></span>
                 <span>아군 추정</span>
               </div>
               <div className="branch-line down" />
               <div className={`tree-node small ${isActive("PASSWORD_CHECK") && p === "ALLY" ? "active" : ""}`}>
-                <span>🔒</span>
+                <span></span>
                 <span>암구호 확인</span>
               </div>
               <div className="branch-results">
                 <div className={`result-box success ${isActive("ALLY_PASS") ? "active" : ""}`}>
-                  <span>✅ 통과 승인</span>
+                  <span> 통과 승인</span>
                   <span className="result-detail">경례, 차단봉 개방</span>
                 </div>
                 <div className={`result-box warning ${isActive("ALLY_ALERT") ? "active" : ""}`}>
-                  <span>⚠️ 경고</span>
+                  <span> 경고</span>
                   <span className="result-detail">정조준, UI 알림</span>
                 </div>
               </div>
@@ -218,21 +218,21 @@ export default function ScenarioPanel() {
               <div className="branch-line right" />
               <div className={`tree-node small ${s === "DETECTED" ? "clickable" : ""} ${p === "ENEMY" ? "active" : ""}`}
                    onClick={s === "DETECTED" ? () => handleIdentify(false) : undefined}>
-                <span>🎭</span>
+                <span></span>
                 <span>적군 추정</span>
               </div>
               <div className="branch-line down" />
               <div className={`tree-node small ${isActive("PASSWORD_CHECK") && p === "ENEMY" ? "active" : ""}`}>
-                <span>🔒</span>
+                <span></span>
                 <span>암구호 확인</span>
               </div>
               <div className="branch-results">
                 <div className={`result-box critical ${isActive("ENEMY_CRITICAL") ? "active" : ""}`}>
-                  <span>🚨 기밀유출</span>
+                  <span> 기밀유출</span>
                   <span className="result-detail">심각 경고, 비상</span>
                 </div>
                 <div className={`result-box danger ${isActive("ENEMY_ENGAGE") ? "active" : ""}`}>
-                  <span>🔴 대응</span>
+                  <span> 대응</span>
                   <span className="result-detail">비비탄 발사</span>
                 </div>
               </div>
@@ -243,20 +243,20 @@ export default function ScenarioPanel() {
         {/* 암구호 문답 현황 (PASSWORD_CHECK 상태일 때 표시) */}
         {s === "PASSWORD_CHECK" && (
           <div className="password-exchange-box">
-            <div className="password-exchange-title">🎤 암구호 문답 현황</div>
+            <div className="password-exchange-title"> 암구호 문답 현황</div>
             <div className="password-exchange-row">
               <div className="exchange-item question">
-                <span className="exchange-label">🤖 질문 (로봇)</span>
+                <span className="exchange-label"> 질문 (로봇)</span>
                 <span className="exchange-value">"{currentChallenge}"</span>
               </div>
               <span className="exchange-arrow">→</span>
               <div className="exchange-item answer">
-                <span className="exchange-label">👤 응답 (접근자)</span>
+                <span className="exchange-label"> 응답 (접근자)</span>
                 <span className={`exchange-value ${voiceStatus?.recognized_text ? "filled" : "waiting"}`}>
                   {voiceStatus?.status === "LISTENING" ? (
-                    <span className="listening-indicator">🎤 녹음 중...</span>
+                    <span className="listening-indicator"> 녹음 중...</span>
                   ) : voiceStatus?.status === "PROCESSING" ? (
-                    <span className="processing-indicator">🔄 인식 중...</span>
+                    <span className="processing-indicator"> 인식 중...</span>
                   ) : voiceStatus?.recognized_text ? (
                     `"${voiceStatus.recognized_text}"`
                   ) : (
@@ -271,7 +271,7 @@ export default function ScenarioPanel() {
         {/* 암구호 결과 표시 */}
         {passwordResult && (
           <div className={`password-result ${passwordResult.correct ? "correct" : "wrong"}`}>
-            <span className="result-icon">{passwordResult.correct ? "✅" : "❌"}</span>
+            <span className="result-icon">{passwordResult.correct ? "" : ""}</span>
             <span className="result-text">{passwordResult.message}</span>
           </div>
         )}
@@ -288,7 +288,7 @@ export default function ScenarioPanel() {
 
         {/* 암구호 설정 (문답식) */}
         <div className="password-settings">
-          <div className="password-settings-title">🔐 암구호 설정 (문답식)</div>
+          <div className="password-settings-title"> 암구호 설정 (문답식)</div>
           <div className="password-settings-row">
             <input
               value={newChallenge}
@@ -319,14 +319,14 @@ export default function ScenarioPanel() {
             onClick={() => handleMotion("salute")}
             disabled={motionLoading}
           >
-            🫡 경례 모션
+             경례 모션
           </button>
           <button 
             className="btn btn-action btn-highready" 
             onClick={() => handleMotion("high_ready")}
             disabled={motionLoading}
           >
-            🛡️ High Ready
+             High Ready
           </button>
         </div>
 
@@ -336,7 +336,7 @@ export default function ScenarioPanel() {
           onClick={handleReset} 
           disabled={loading || s === "IDLE"}
         >
-          🔄 시나리오 리셋 {s !== "IDLE" && `(현재: ${s})`}
+           시나리오 리셋 {s !== "IDLE" && `(현재: ${s})`}
         </button>
 
         {/* 로그 */}
@@ -358,8 +358,8 @@ export default function ScenarioPanel() {
             <div className="popup-title">{popup.title}</div>
             {popup.type === "identify" && (
               <div className="popup-btns">
-                <button className="btn btn-primary" onClick={() => handleIdentify(true)}>👤 아군</button>
-                <button className="btn btn-danger" onClick={() => handleIdentify(false)}>🎭 적군</button>
+                <button className="btn btn-primary" onClick={() => handleIdentify(true)}> 아군</button>
+                <button className="btn btn-danger" onClick={() => handleIdentify(false)}> 적군</button>
               </div>
             )}
             {popup.type === "password" && (

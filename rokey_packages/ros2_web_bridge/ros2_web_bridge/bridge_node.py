@@ -414,7 +414,7 @@ class BridgeNode(Node):
                 self.servo_on = on
             
             status = "ON" if on else "OFF"
-            self.get_logger().info(f'🎯 Auto {device.upper()} {status}')
+            self.get_logger().info(f' Auto {device.upper()} {status}')
         except Exception as e:
             pass  # 타임아웃 무시 (스트림 차단 방지)
 

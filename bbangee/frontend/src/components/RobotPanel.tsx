@@ -188,7 +188,7 @@ export default function RobotPanel() {
         {/* Joint Tracking 제어 */}
         <div className="control-section">
           <h4>
-            제어권: {jointTracking?.control_source === 'web' ? '🌐 웹' : '🖥️ 터미널'}
+            제어권: {jointTracking?.control_source === 'web' ? ' 웹' : ' 터미널'}
             {jointTracking?.state === 'TRACKING' && <span className="tracking-active"> (추적중)</span>}
           </h4>
           
@@ -200,7 +200,7 @@ export default function RobotPanel() {
               disabled={loading}
               title="웹에서 제어권 가져오기"
             >
-              {jointTracking?.control_source === 'web' ? "✅ 웹 제어중" : "🌐 웹 제어권 가져오기"}
+              {jointTracking?.control_source === 'web' ? " 웹 제어중" : " 웹 제어권 가져오기"}
             </button>
           </div>
 
@@ -212,7 +212,7 @@ export default function RobotPanel() {
               disabled={loading || !controlAllowed}
               title={jointTracking?.state === 'TRACKING' ? "추적 중지" : "추적 시작"}
             >
-              {jointTracking?.state === 'TRACKING' ? "⏹️ 추적 중지" : "🎯 추적 시작"}
+              {jointTracking?.state === 'TRACKING' ? "⏹ 추적 중지" : " 추적 시작"}
             </button>
           </div>
 
@@ -224,7 +224,7 @@ export default function RobotPanel() {
               disabled={loading || !controlAllowed || jointTracking?.state === 'TRACKING'}
               title="홈 위치로 이동"
             >
-              🏠 홈
+               홈
             </button>
             <button 
               className="btn btn-secondary"
@@ -232,7 +232,7 @@ export default function RobotPanel() {
               disabled={loading || !controlAllowed || jointTracking?.state === 'TRACKING'}
               title="준비 위치로 이동"
             >
-              📍 준비
+               준비
             </button>
             <button 
               className="btn btn-secondary"
@@ -240,7 +240,7 @@ export default function RobotPanel() {
               disabled={loading || !controlAllowed || jointTracking?.state === 'TRACKING'}
               title="J6 180도 회전 (카메라 방향 전환)"
             >
-              📷 카메라 회전
+               카메라 회전
             </button>
           </div>
           
@@ -254,7 +254,7 @@ export default function RobotPanel() {
                 disabled={loading || !controlAllowed}
                 title="기본 제어 - 직접 관절 제어"
               >
-                {jointTracking?.control_mode === 1 ? "✓ " : ""}기본 제어
+                {jointTracking?.control_mode === 1 ? " " : ""}기본 제어
               </button>
               <button 
                 className={`btn btn-sm ${jointTracking?.control_mode === 2 ? "btn-primary" : "btn-outline"}`}
@@ -262,14 +262,14 @@ export default function RobotPanel() {
                 disabled={loading || !controlAllowed}
                 title="최적 제어 - 스무딩 적용"
               >
-                {jointTracking?.control_mode === 2 ? "✓ " : ""}최적 제어
+                {jointTracking?.control_mode === 2 ? " " : ""}최적 제어
               </button>
             </div>
           </div>
           
           {!controlAllowed && (
             <div className="control-hint">
-              ⚠️ 웹 제어권을 가져와야 제어할 수 있습니다
+               웹 제어권을 가져와야 제어할 수 있습니다
             </div>
           )}
         </div>

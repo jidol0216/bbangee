@@ -11,7 +11,7 @@
  * 3. 실시간 상태 표시 - /status API 폴링
  * 4. ElevenLabs TTS - /speak, /tts API 호출
  * 
- * ⚠️ 시나리오 진행 중에는 모든 기능 비활성화 (충돌 방지)
+ *  시나리오 진행 중에는 모든 기능 비활성화 (충돌 방지)
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { api } from "../api/client";
@@ -45,12 +45,12 @@ const VOICES: Voice[] = [
 
 // 상태별 스타일 클래스
 const STATUS_STYLES: Record<string, { class: string; icon: string; text: string }> = {
-  IDLE: { class: "idle", icon: "⏸️", text: "대기 중" },
-  LISTENING: { class: "listening", icon: "🎤", text: "녹음 중..." },
-  PROCESSING: { class: "processing", icon: "🔄", text: "인식 중..." },
-  SUCCESS: { class: "success", icon: "✅", text: "인증 성공!" },
-  FAILED: { class: "failed", icon: "❌", text: "인증 실패" },
-  ERROR: { class: "error", icon: "⚠️", text: "오류 발생" },
+  IDLE: { class: "idle", icon: "⏸", text: "대기 중" },
+  LISTENING: { class: "listening", icon: "", text: "녹음 중..." },
+  PROCESSING: { class: "processing", icon: "", text: "인식 중..." },
+  SUCCESS: { class: "success", icon: "", text: "인증 성공!" },
+  FAILED: { class: "failed", icon: "", text: "인증 실패" },
+  ERROR: { class: "error", icon: "", text: "오류 발생" },
 };
 
 // 시나리오 진행 중인 상태들 (이 상태일 때 보이스 패널 비활성화)
@@ -198,7 +198,7 @@ export default function VoicePanel() {
   return (
     <div className="panel voice-panel">
       <div className="panel-header">
-        <span className="panel-title">🔊 VOICE</span>
+        <span className="panel-title"> VOICE</span>
         <span className={`panel-tag ${authStatus?.voice_auth_running ? "online" : "offline"}`}>
           {authStatus?.voice_auth_running ? "ROS2 연결됨" : "ROS2 대기"}
         </span>
@@ -218,7 +218,7 @@ export default function VoicePanel() {
             textAlign: "center",
             color: "#ffc107"
           }}>
-            ⚠️ 시나리오 진행 중 - 보이스 패널 비활성화
+             시나리오 진행 중 - 보이스 패널 비활성화
             <div style={{ fontSize: "12px", opacity: 0.8 }}>
               상태: {scenarioState}
             </div>
@@ -233,19 +233,19 @@ export default function VoicePanel() {
           </div>
           {authStatus?.recognized_text && (
             <div className="recognized-text">
-              📝 인식: "{authStatus.recognized_text}"
+               인식: "{authStatus.recognized_text}"
             </div>
           )}
           {authStatus?.last_result !== null && authStatus?.last_result !== undefined && (
             <div className={`last-result ${authStatus?.last_result ? "success" : "failed"}`}>
-              {authStatus?.last_result ? "✅ 마지막 인증: 성공" : "❌ 마지막 인증: 실패"}
+              {authStatus?.last_result ? " 마지막 인증: 성공" : " 마지막 인증: 실패"}
             </div>
           )}
         </div>
 
         {/* 현재 암구호 표시 */}
         <div className="current-passphrase">
-          <div className="passphrase-label">🔐 현재 암구호</div>
+          <div className="passphrase-label"> 현재 암구호</div>
           <div className="passphrase-pair">
             <span className="question">질문: <strong>"{authStatus?.question || '까마귀'}"</strong></span>
             <span className="arrow">→</span>
@@ -255,13 +255,13 @@ export default function VoicePanel() {
 
         {/* 암구호 인증 테스트 */}
         <div className="voice-scenario">
-          <label>🎖️ 암구호 인증 테스트:</label>
+          <label> 암구호 인증 테스트:</label>
           <button
             className={`btn btn-warning btn-block ${authLoading ? "loading" : ""}`}
             onClick={startAuthTest}
             disabled={isScenarioActive || authLoading || authStatus?.status === "LISTENING" || authStatus?.status === "PROCESSING"}
           >
-            {isScenarioActive ? "🚫 시나리오 진행 중" : authLoading ? "🔄 인증 진행 중..." : "🔒 암구호 테스트 시작"}
+            {isScenarioActive ? " 시나리오 진행 중" : authLoading ? " 인증 진행 중..." : " 암구호 테스트 시작"}
           </button>
           <small className="help-text">
             TTS로 질문 → 마이크 녹음 (3.5초) → STT 인식 → 판정
@@ -270,7 +270,7 @@ export default function VoicePanel() {
 
         {/* 암구호 설정 변경 */}
         <div className="passphrase-settings">
-          <label>🔧 암구호 변경:</label>
+          <label> 암구호 변경:</label>
           <div className="passphrase-inputs">
             <input
               type="text"
@@ -302,7 +302,7 @@ export default function VoicePanel() {
 
         {/* 음성 선택 */}
         <div className="voice-select">
-          <label>🎙️ ElevenLabs 음성:</label>
+          <label> ElevenLabs 음성:</label>
           <select value={voice} onChange={(e) => setVoice(e.target.value)} disabled={isScenarioActive}>
             {VOICES.map((v) => (
               <option key={v.id} value={v.id}>
@@ -314,28 +314,28 @@ export default function VoicePanel() {
 
         {/* 테스트용 강제 판정 */}
         <div className="force-decision">
-          <label>🧪 테스트용 강제 판정:</label>
+          <label> 테스트용 강제 판정:</label>
           <div className="decision-buttons">
             <button
               className="btn btn-primary"
               onClick={() => forceDecision(true)}
               disabled={isScenarioActive || loading}
             >
-              👋 아군으로 처리
+               아군으로 처리
             </button>
             <button
               className="btn btn-danger"
               onClick={() => forceDecision(false)}
               disabled={isScenarioActive || loading}
             >
-              🚫 적군으로 처리
+               적군으로 처리
             </button>
           </div>
         </div>
 
         {/* 커스텀 텍스트 입력 */}
         <div className="voice-custom">
-          <label>💬 직접 입력:</label>
+          <label> 직접 입력:</label>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -350,7 +350,7 @@ export default function VoicePanel() {
               disabled={isScenarioActive || loading || !text.trim()}
               title="서버(로봇 옆) 스피커로 재생"
             >
-              🔈 서버 재생
+               서버 재생
             </button>
             <button
               className="btn btn-secondary"
@@ -358,7 +358,7 @@ export default function VoicePanel() {
               disabled={isScenarioActive || loading || !text.trim()}
               title="웹 브라우저에서 재생"
             >
-              🎧 브라우저 재생
+               브라우저 재생
             </button>
           </div>
         </div>
@@ -366,7 +366,7 @@ export default function VoicePanel() {
         {/* 숨겨진 오디오 플레이어 */}
         <audio ref={audioRef} style={{ display: "none" }} />
         
-        {loading && <div className="voice-loading">🔄 처리 중...</div>}
+        {loading && <div className="voice-loading"> 처리 중...</div>}
       </div>
     </div>
   );

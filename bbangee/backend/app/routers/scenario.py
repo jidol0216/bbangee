@@ -109,7 +109,7 @@ class ScenarioManager:
         try:
             from app.routers.voice import set_passphrase_internal
             set_passphrase_internal(self.password_challenge, self.password_response)
-            print(f"🔄 Voice 암구호 동기화: {self.password_challenge} → {self.password_response}")
+            print(f" Voice 암구호 동기화: {self.password_challenge} → {self.password_response}")
         except Exception as e:
             print(f"Voice 동기화 실패: {e}")
 
@@ -234,25 +234,25 @@ class ScenarioManager:
             if is_correct:
                 self.state = ScenarioState.ALLY_PASS
                 self._add_history("아군 암구호 정답 - 통과 승인")
-                result_msg, alert_level = "✅ 아군 통과 승인", "success"
+                result_msg, alert_level = " 아군 통과 승인", "success"
                 execute_motion("salute")
                 await self._speak("충성!")
             else:
                 self.state = ScenarioState.ALLY_ALERT
                 self._add_history("아군 암구호 오답 - 경고")
-                result_msg, alert_level = "⚠️ 아군 암구호 오답 - 경고 발령", "warning"
+                result_msg, alert_level = " 아군 암구호 오답 - 경고 발령", "warning"
                 execute_motion("high_ready")
                 await self._speak("암구호가 틀렸습니다. 움직이지 마세요.")
         else:  # ENEMY
             if is_correct:
                 self.state = ScenarioState.ENEMY_CRITICAL
                 self._add_history("적군 암구호 정답 - 기밀유출 의심")
-                result_msg, alert_level = "🚨 적군이 암구호 정답 - 기밀유출!", "critical"
+                result_msg, alert_level = " 적군이 암구호 정답 - 기밀유출!", "critical"
                 await self._play_enemy_critical_alert()
             else:
                 self.state = ScenarioState.ENEMY_ENGAGE
                 self._add_history("적군 암구호 오답 - 대응")
-                result_msg, alert_level = "🔴 적군 대응 - 침입자!", "danger"
+                result_msg, alert_level = " 적군 대응 - 침입자!", "danger"
 
                 await asyncio.sleep(1.0)
                 device_control.control_servo(True)
@@ -365,7 +365,7 @@ class ScenarioManager:
         try:
             from app.routers.armband import set_ocr_enabled_internal
             set_ocr_enabled_internal(enabled)
-            print(f"🎯 OCR {'활성화' if enabled else '비활성화'}")
+            print(f" OCR {'활성화' if enabled else '비활성화'}")
         except Exception as e:
             print(f"OCR 상태 변경 실패: {e}")
 
@@ -380,7 +380,7 @@ class ScenarioManager:
         try:
             from app.routers.voice import start_scenario_auth_internal
             start_scenario_auth_internal(timeout_sec, "eric")
-            print("🎤 [시나리오] 음성 인증 시작")
+            print(" [시나리오] 음성 인증 시작")
         except Exception as e:
             print(f"[시나리오] 음성 인증 시작 실패: {e}")
 
@@ -389,7 +389,7 @@ class ScenarioManager:
         try:
             from app.routers.voice import reset_voice_internal
             reset_voice_internal()
-            print("🔄 Voice 상태 리셋")
+            print(" Voice 상태 리셋")
         except Exception as e:
             print(f"Voice 상태 리셋 실패: {e}")
 
@@ -406,7 +406,7 @@ class ScenarioManager:
         audio_service.play_alert_buzzer("critical")
         await asyncio.sleep(9)
         device_control.control_servo(False)
-        print("🔫 서보 OFF (사이렌 종료)")
+        print(" 서보 OFF (사이렌 종료)")
 
 
 # 싱글톤

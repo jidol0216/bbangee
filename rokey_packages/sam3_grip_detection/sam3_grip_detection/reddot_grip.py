@@ -111,7 +111,7 @@ class ReddotGrip(Node):
         if not TEST_MODE:
             self._init_robot()
         else:
-            self.get_logger().warn('⚠️ TEST MODE - 로봇 동작 없이 좌표만 출력')
+            self.get_logger().warn(' TEST MODE - 로봇 동작 없이 좌표만 출력')
         
         # QoS 설정
         qos = QoSProfile(
@@ -134,7 +134,7 @@ class ReddotGrip(Node):
         self.grip_point_pub = self.create_publisher(PointStamped, '/reddot/grip_point', 10)
         
         self.get_logger().info('=' * 50)
-        self.get_logger().info('🔴 ReddotGrip 노드 시작')
+        self.get_logger().info(' ReddotGrip 노드 시작')
         self.get_logger().info(f'   YOLO 모델: {YOLO_MODEL_PATH}')
         self.get_logger().info(f'   캘리브레이션: {CALIBRATION_FILE}')
         self.get_logger().info(f'   빨간점 오프셋: Z{REDDOT_Z_OFFSET}mm')
@@ -156,14 +156,14 @@ class ReddotGrip(Node):
         self.last_detection = None
         if SHOW_DISPLAY:
             self.create_timer(0.05, self._display_loop)  # 20fps
-            self.get_logger().info('🖥️ 실시간 화면 표시 활성화 (ESC: 종료)')
+            self.get_logger().info(' 실시간 화면 표시 활성화 (ESC: 종료)')
     
     def _load_yolo_model(self):
         """YOLO 모델 로드"""
         if os.path.exists(YOLO_MODEL_PATH):
-            self.get_logger().info(f'📦 YOLO 모델 로딩: {YOLO_MODEL_PATH}')
+            self.get_logger().info(f' YOLO 모델 로딩: {YOLO_MODEL_PATH}')
             self.yolo_model = YOLO(YOLO_MODEL_PATH)
-            self.get_logger().info('✅ YOLO 모델 로드 완료')
+            self.get_logger().info(' YOLO 모델 로드 완료')
             return True
         else:
             self.get_logger().warn(f'⏳ YOLO 모델 대기 중: {YOLO_MODEL_PATH}')
@@ -183,14 +183,14 @@ class ReddotGrip(Node):
                 U, S, Vt = np.linalg.svd(R)
                 R_fixed = U @ Vt
                 self.T_gripper2camera[:3, :3] = R_fixed
-                self.get_logger().info(f'⚠️ 회전행렬 det={det:.2f} → SVD 수정됨')
+                self.get_logger().info(f' 회전행렬 det={det:.2f} → SVD 수정됨')
             
             # 단위 확인: mm 단위면 그대로 사용 (>1), m 단위면 mm로 변환 (<1)
             if np.all(np.abs(translation) < 1.0):  # m 단위로 추정
                 self.T_gripper2camera[:3, 3] *= 1000.0  # m -> mm
-                self.get_logger().info(f'✅ 캘리브레이션 로드 (m→mm 변환)')
+                self.get_logger().info(f' 캘리브레이션 로드 (m→mm 변환)')
             else:
-                self.get_logger().info(f'✅ 캘리브레이션 로드 (mm 단위)')
+                self.get_logger().info(f' 캘리브레이션 로드 (mm 단위)')
             
             final_trans = self.T_gripper2camera[:3, 3]
             self.get_logger().info(f'   Translation: ({final_trans[0]:.1f}, {final_trans[1]:.1f}, {final_trans[2]:.1f}) mm')
@@ -228,7 +228,7 @@ class ReddotGrip(Node):
             calib_ready = True
         
         if yolo_ready and calib_ready:
-            self.get_logger().info('🎉 모든 파일 준비 완료! 검출 시작합니다.')
+            self.get_logger().info(' 모든 파일 준비 완료! 검출 시작합니다.')
             self.files_ready = True
             return True
         
@@ -240,7 +240,7 @@ class ReddotGrip(Node):
         
         from DSR_ROBOT2 import set_robot_mode, set_robot_system
         
-        self.get_logger().info('🤖 로봇 초기화...')
+        self.get_logger().info(' 로봇 초기화...')
         set_robot_mode(1)  # 자동 모드로 변경 (0: 수동, 1: 자동)
         set_robot_system(0)
         
@@ -248,9 +248,9 @@ class ReddotGrip(Node):
             from onrobot import RG
             self.gripper = RG(GRIPPER_NAME, TOOLCHANGER_IP, TOOLCHANGER_PORT)
             self.gripper_available = True
-            self.get_logger().info('✅ 그리퍼 연결 성공')
+            self.get_logger().info(' 그리퍼 연결 성공')
         except Exception as e:
-            self.get_logger().warn(f'⚠️ 그리퍼 연결 실패: {e}')
+            self.get_logger().warn(f' 그리퍼 연결 실패: {e}')
             self.gripper_available = False
     
     def _color_callback(self, msg):
@@ -277,7 +277,7 @@ class ReddotGrip(Node):
             self.fy = msg.k[4]
             self.cx = msg.k[2]
             self.cy = msg.k[5]
-            self.get_logger().info(f'📷 카메라 정보: fx={self.fx:.1f}, fy={self.fy:.1f}')
+            self.get_logger().info(f' 카메라 정보: fx={self.fx:.1f}, fy={self.fy:.1f}')
     
     def _detect_reddot(self):
         """YOLO로 빨간점 검출"""
@@ -451,7 +451,7 @@ class ReddotGrip(Node):
         marker.lifetime.sec = 30
         
         self.grip_marker_pub.publish(marker)
-        self.get_logger().info(f'📍 RViz 마커 퍼블리시: ({base_coord[0]:.1f}, {base_coord[1]:.1f}, {base_coord[2]:.1f}) mm')
+        self.get_logger().info(f' RViz 마커 퍼블리시: ({base_coord[0]:.1f}, {base_coord[1]:.1f}, {base_coord[2]:.1f}) mm')
     
     def _main_loop(self):
         """메인 루프: 검출 → 잡기"""
@@ -476,7 +476,7 @@ class ReddotGrip(Node):
         cx, cy = detection['center']
         conf = detection['confidence']
         
-        self.get_logger().info(f'🔴 빨간점 검출! 픽셀=({cx}, {cy}), 신뢰도={conf:.2f}, 연속={self.detection_count}')
+        self.get_logger().info(f' 빨간점 검출! 픽셀=({cx}, {cy}), 신뢰도={conf:.2f}, 연속={self.detection_count}')
         
         # 3번 연속 검출 시 그립 실행
         if self.detection_count >= 3:
@@ -485,36 +485,36 @@ class ReddotGrip(Node):
     def _execute_grip(self, px, py):
         """그립 실행"""
         self.get_logger().info('=' * 50)
-        self.get_logger().info('🎯 그립 실행 시작!')
+        self.get_logger().info(' 그립 실행 시작!')
         
         # 1. 픽셀 → 카메라 좌표
         camera_coord = self._pixel_to_camera_coord(px, py)
         if camera_coord is None:
-            self.get_logger().error('❌ Depth 값 없음')
+            self.get_logger().error(' Depth 값 없음')
             return
         
-        self.get_logger().info(f'📍 카메라 좌표: ({camera_coord[0]:.1f}, {camera_coord[1]:.1f}, {camera_coord[2]:.1f}) mm')
+        self.get_logger().info(f' 카메라 좌표: ({camera_coord[0]:.1f}, {camera_coord[1]:.1f}, {camera_coord[2]:.1f}) mm')
         
         # 2. 빨간점에서 Z -35mm 오프셋 적용 (잡을 위치)
         grip_camera_coord = camera_coord.copy()
         grip_camera_coord[2] += REDDOT_Z_OFFSET  # 카메라 Z축 방향으로 오프셋
         
-        self.get_logger().info(f'📍 잡을 위치 (카메라): ({grip_camera_coord[0]:.1f}, {grip_camera_coord[1]:.1f}, {grip_camera_coord[2]:.1f}) mm')
+        self.get_logger().info(f' 잡을 위치 (카메라): ({grip_camera_coord[0]:.1f}, {grip_camera_coord[1]:.1f}, {grip_camera_coord[2]:.1f}) mm')
         
         # 3. 현재 로봇 위치 가져오기
         if TEST_MODE:
             # 테스트용 현재 위치
             robot_pos = [450.0, 0.0, 400.0, 0.0, 180.0, 0.0]
-            self.get_logger().info(f'📍 현재 로봇 위치 (테스트): {robot_pos}')
+            self.get_logger().info(f' 현재 로봇 위치 (테스트): {robot_pos}')
         else:
             from DSR_ROBOT2 import get_current_posx
             robot_pos, _ = get_current_posx()
-            self.get_logger().info(f'📍 현재 로봇 위치: {robot_pos}')
+            self.get_logger().info(f' 현재 로봇 위치: {robot_pos}')
         
         # 4. 카메라 좌표 → 베이스 좌표
         base_coord = self._camera_to_base_coord(grip_camera_coord, robot_pos)
         
-        self.get_logger().info(f'🎯 베이스 좌표: ({base_coord[0]:.1f}, {base_coord[1]:.1f}, {base_coord[2]:.1f}) mm')
+        self.get_logger().info(f' 베이스 좌표: ({base_coord[0]:.1f}, {base_coord[1]:.1f}, {base_coord[2]:.1f}) mm')
         
         # RViz 마커 퍼블리시
         self._publish_grip_marker(base_coord)
@@ -526,7 +526,7 @@ class ReddotGrip(Node):
             self._do_grip(base_coord, robot_pos)
         
         self.grip_executed = True
-        self.get_logger().info('✅ 그립 완료!')
+        self.get_logger().info(' 그립 완료!')
         self.get_logger().info('=' * 50)
     
     def _simulate_grip(self, base_coord, robot_pos):
@@ -557,13 +557,13 @@ class ReddotGrip(Node):
         # 안전: Z 최소값 설정 (바닥 충돌 방지)
         Z_MIN = 50.0  # mm - 최소 높이
         if z < Z_MIN:
-            self.get_logger().warn(f'⚠️ Z={z:.1f}mm이 너무 낮음! Z={Z_MIN}mm로 조정')
+            self.get_logger().warn(f' Z={z:.1f}mm이 너무 낮음! Z={Z_MIN}mm로 조정')
             z = Z_MIN
         
         # 그립 방향 - 아래를 향하도록 고정 (ZYZ 오일러)
         # 기존 방향 대신 아래 방향 고정
         rx, ry, rz = 0.0, 180.0, 0.0  # 아래를 바라보는 자세
-        self.get_logger().info(f'📐 그립 방향: rx={rx}, ry={ry}, rz={rz}')
+        self.get_logger().info(f' 그립 방향: rx={rx}, ry={ry}, rz={rz}')
         
         # 1. 그리퍼 열기
         self.get_logger().info(f'1. 그리퍼 열기... 폭={GRIPPER_OPEN_WIDTH}mm')
@@ -626,7 +626,7 @@ def main(args=None):
             if SHOW_DISPLAY:
                 key = cv2.waitKey(1) & 0xFF
                 if key == 27:  # ESC
-                    print("\n🛑 ESC 종료")
+                    print("\n ESC 종료")
                     break
     except KeyboardInterrupt:
         pass

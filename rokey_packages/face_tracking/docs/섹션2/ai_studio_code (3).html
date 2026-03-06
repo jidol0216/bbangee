@@ -26,12 +26,12 @@
                         <tr><th>기술 영역</th><th>난제</th><th>난이도</th><th>해결 방안</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><strong>얼굴 검출</strong></td><td>실시간+정확도</td><td class="text-red-400">🔴 높음</td><td>YOLOv8 + TensorRT</td></tr>
-                        <tr><td><strong>상태 추정</strong></td><td>노이즈 속 추정</td><td class="text-red-400">🔴 높음</td><td>9-state EKF</td></tr>
-                        <tr><td><strong>로봇 제어</strong></td><td>빠르고 부드러운 추적</td><td class="text-red-400">🔴 높음</td><td>Joint-space 제어</td></tr>
-                        <tr><td><strong>권총 파지</strong></td><td>segementation 성능 및 정확도</td><td class="text-red-400">🔴 높음</td><td>SAM3</td></tr>
-                        <tr><td><strong>음성 인식</strong></td><td>소음 환경 인식</td><td class="text-yellow-400">🟡 중간</td><td>Whisper STT</td></tr>
-                        <tr><td><strong>시스템 통합</strong></td><td>실시간 동기화</td><td class="text-yellow-400">🟡 중간</td><td>ROS2 Topic/Service</td></tr>
+                        <tr><td><strong>얼굴 검출</strong></td><td>실시간+정확도</td><td class="text-red-400"> 높음</td><td>YOLOv8 + TensorRT</td></tr>
+                        <tr><td><strong>상태 추정</strong></td><td>노이즈 속 추정</td><td class="text-red-400"> 높음</td><td>9-state EKF</td></tr>
+                        <tr><td><strong>로봇 제어</strong></td><td>빠르고 부드러운 추적</td><td class="text-red-400"> 높음</td><td>Joint-space 제어</td></tr>
+                        <tr><td><strong>권총 파지</strong></td><td>segementation 성능 및 정확도</td><td class="text-red-400"> 높음</td><td>SAM3</td></tr>
+                        <tr><td><strong>음성 인식</strong></td><td>소음 환경 인식</td><td class="text-yellow-400"> 중간</td><td>Whisper STT</td></tr>
+                        <tr><td><strong>시스템 통합</strong></td><td>실시간 동기화</td><td class="text-yellow-400"> 중간</td><td>ROS2 Topic/Service</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -39,13 +39,13 @@
                 <h3 class="text-3xl font-bold mb-4">기존 접근법의 한계와 해결책</h3>
                 <div class="bg-slate-800 p-4 rounded-lg space-y-4">
                     <div>
-                        <p class="text-lg"><strong class="text-red-400">❌ 기존 접근법:</strong> MoveIt IK 기반 제어</p>
+                        <p class="text-lg"><strong class="text-red-400"> 기존 접근법:</strong> MoveIt IK 기반 제어</p>
                         <p class="text-slate-400 ml-4">• 계산 지연(~50ms), 복잡한 경로, 불필요한 움직임</p>
                         <p class="text-lg mt-1"><strong class="text-green-400">⭕ 우리의 해결책:</strong> Joint-space 직접 제어</p>
                         <p class="text-slate-400 ml-4">• 계산 지연(&lt;1ms), 단순 각도 매핑, 2-DOF 제어</p>
                     </div>
                     <div class="border-t border-slate-700 pt-4">
-                        <p class="text-lg"><strong class="text-red-400">❌ 기존 접근법:</strong> CPU 기반 추론</p>
+                        <p class="text-lg"><strong class="text-red-400"> 기존 접근법:</strong> CPU 기반 추론</p>
                         <p class="text-slate-400 ml-4">• YOLO 추론: ~50ms, 실시간 처리 불가</p>
                         <p class="text-lg mt-1"><strong class="text-green-400">⭕ 우리의 해결책:</strong> GPU + TensorRT 추론</p>
                         <p class="text-slate-400 ml-4">• YOLO 추론: ~5ms, 50Hz+ 처리 가능</p>
